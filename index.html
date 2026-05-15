@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>발도장 — 우리 아이의 건강 기록을 한 곳에</title>
+  <meta name="description" content="발도장은 반려동물의 예방접종, 진료, 알러지 검사를 한 곳에서 관리하는 모바일 앱입니다." />
+  <meta property="og:title" content="발도장 — 우리 아이의 건강 기록을 한 곳에" />
+  <meta property="og:description" content="발도장은 반려동물의 예방접종, 진료, 알러지 검사를 한 곳에서 관리하는 모바일 앱입니다." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://pawstamp.rubi-on.com" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐾%3C/text%3E%3C/svg%3E" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #f6fafd;
+      --surface: #ffffff;
+      --primary: #0ea5e9;
+      --primary-dark: #0369a1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary-dark); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+    .brand-icon { font-size: 24px; }
+    .nav-links { display: flex; gap: 20px; font-size: 14px; color: var(--text-muted); }
+    .hero { padding: 80px 0 64px; text-align: center; }
+    .hero h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 800; margin: 0 0 16px; letter-spacing: -0.02em; }
+    .hero p { font-size: clamp(16px, 2.2vw, 18px); color: var(--text-muted); margin: 0 auto 32px; max-width: 540px; }
+    .cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px;
+      background: var(--primary);
+      color: white;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .cta:hover { background: var(--primary-dark); text-decoration: none; }
+    .cta-note { display: block; margin-top: 12px; font-size: 13px; color: var(--text-muted); }
+    .features {
+      padding: 64px 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .feature {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: var(--shadow);
+    }
+    .feature-icon { font-size: 32px; margin-bottom: 12px; }
+    .feature h3 { margin: 0 0 8px; font-size: 18px; }
+    .feature p { margin: 0; color: var(--text-muted); font-size: 15px; }
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .footer-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand"><span class="brand-icon">🐾</span><span>발도장</span></div>
+      <nav class="nav-links">
+        <a href="#features">기능</a>
+        <a href="#contact">문의</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <h1>우리 아이의 건강 기록을<br />한 곳에서 관리하세요</h1>
+      <p>발도장은 반려동물의 예방접종, 진료 기록, 알러지 검사 결과를 보호자가 함께 관리할 수 있는 모바일 앱입니다.</p>
+      <a class="cta" href="#" aria-disabled="true">곧 출시 예정</a>
+      <span class="cta-note">Google Play 출시 준비 중입니다.</span>
+    </section>
+
+    <section id="features" class="container features">
+      <div class="feature">
+        <div class="feature-icon">💉</div>
+        <h3>예방접종 관리</h3>
+        <p>접종 이력과 만료 예정일을 자동으로 추적하고 알림으로 안내합니다.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🩺</div>
+        <h3>진료 기록 보관</h3>
+        <p>병원 방문 내역, 진단명, 처방약, 비용을 사진과 함께 보관해요.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🧪</div>
+        <h3>알러지 검사 분석</h3>
+        <p>검사지 사진을 올리면 AI가 결과를 분석해 정리해 드립니다.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">👥</div>
+        <h3>공동 보호자</h3>
+        <p>가족과 함께 한 마리의 기록을 공유하고 함께 돌볼 수 있어요.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">💬</div>
+        <h3>보호자 커뮤니티</h3>
+        <p>같은 고민을 나누는 보호자들과 정보를 주고받을 수 있어요.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔔</div>
+        <h3>맞춤 알림</h3>
+        <p>접종 만료, 분석 완료, 커뮤니티 반응을 푸시로 받아보세요.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contact">
+    <div class="container footer-row">
+      <div>© 2026 발도장. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="mailto:tjrwls883@gmail.com">문의: tjrwls883@gmail.com</a>
+        <a id="privacy-link" href="#" target="_blank" rel="noopener">개인정보처리방침</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
