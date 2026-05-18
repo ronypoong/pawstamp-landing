@@ -1,4 +1,5 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { BrandPaw } from "./BrandPaw";
 
 interface NavItem {
   label: string;
@@ -21,7 +22,7 @@ export function Header() {
     <header className="site-header">
       <div className="container site-nav">
         <Link className="brand" to="/" aria-label="발도장 홈">
-          <span className="brand-icon" aria-hidden="true">🐾</span>
+          <BrandPaw className="brand-icon" />
           <span>발도장</span>
         </Link>
         <nav className="nav-links" aria-label="주요 메뉴">
