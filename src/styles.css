@@ -379,3 +379,13 @@ section.about p {
 .privacy-page tr:last-child td {
   border-bottom: none;
 }
+
+/* DB에서 받은 평문 약관 본문을 줄바꿈 그대로 렌더한다. 콘솔에서 작성한 텍스트가 일관되게 보이도록 폭/줄간격만 지정. */
+.privacy-page .terms-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text);
+  margin-top: 24px;
+}

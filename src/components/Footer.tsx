@@ -9,6 +9,7 @@ export function Footer() {
         <div>© {new Date().getFullYear()} 발도장. All rights reserved.</div>
         <div className="footer-links">
           <a href={`mailto:${CONTACT_EMAIL}`}>문의: {CONTACT_EMAIL}</a>
+          <Link to="/terms">이용약관</Link>
           <Link to="/privacy">개인정보처리방침</Link>
         </div>
       </div>
