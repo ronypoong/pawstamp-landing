@@ -12,7 +12,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "소개", to: "/#about" },
   { label: "기능", to: "/#features" },
   { label: "개인정보처리방침", to: "/privacy", exact: true },
-  { label: "문의", to: "/#contact" },
+  { label: "문의", to: "/feedback", exact: true },
 ];
 
 export function Header() {

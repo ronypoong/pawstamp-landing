@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { Layout } from "./layouts/Layout";
 import { HomePage } from "./pages/HomePage";
 import { TermsDocumentPage } from "./pages/TermsDocumentPage";
+import { FeedbackPage } from "./pages/FeedbackPage";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/privacy-consent" element={<TermsDocumentPage type="PRIVACY" />} />
         <Route path="/location" element={<TermsDocumentPage type="LOCATION" />} />
         <Route path="/marketing" element={<TermsDocumentPage type="MARKETING" />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="*" element={<HomePage />} />
       </Route>
     </Routes>
