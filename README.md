@@ -39,4 +39,4 @@ npm run preview  # 빌드 결과 미리보기
 ## 수정 시 주의
 - 모든 페이지는 `Layout` 안에 들어가므로 nav/footer가 자동으로 동일하게 유지됩니다. 새 페이지 추가 시 `App.tsx` 라우트만 추가하면 됨.
 - 정책 페이지 본문은 `pages/PrivacyPage.tsx` 안에 직접 작성. 변경 시 시행일/개정 이력도 함께 업데이트.
-- 문의 이메일: `tjrwls883@gmail.com` (Footer.tsx 상수)
+- 문의 이메일: `support@rubi-on.com` (Footer.tsx 상수)

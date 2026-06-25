@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const CONTACT_EMAIL = "tjrwls883@gmail.com";
+const CONTACT_EMAIL = "support@rubi-on.com";
 
 export function Footer() {
   return (
