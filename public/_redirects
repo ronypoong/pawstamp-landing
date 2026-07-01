@@ -1,5 +1,3 @@
-# 아동 안전 표준 정적 페이지(SPA fallback보다 우선) — Google Play 아동 안전 정책용
-/child-safety      /child-safety.html   200
-/child-safety/     /child-safety.html   200
-
+# child-safety.html 은 Cloudflare Pages가 자동으로 /child-safety (clean URL)로 서빙한다.
+# (명시 규칙으로 /child-safety → /child-safety.html 을 넣으면 .html→clean 자동 리다이렉트와 충돌해 무한 루프가 나므로 넣지 않는다.)
 /*    /index.html   200
