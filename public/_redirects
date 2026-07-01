@@ -1,1 +1,5 @@
+# 아동 안전 표준 정적 페이지(SPA fallback보다 우선) — Google Play 아동 안전 정책용
+/child-safety      /child-safety.html   200
+/child-safety/     /child-safety.html   200
+
 /*    /index.html   200
