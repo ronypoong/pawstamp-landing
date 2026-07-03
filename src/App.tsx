@@ -3,6 +3,8 @@ import { Layout } from "./layouts/Layout";
 import { HomePage } from "./pages/HomePage";
 import { TermsDocumentPage } from "./pages/TermsDocumentPage";
 import { FeedbackPage } from "./pages/FeedbackPage";
+import { AnnouncementsPage } from "./pages/AnnouncementsPage";
+import { AnnouncementDetailPage } from "./pages/AnnouncementDetailPage";
 
 export default function App() {
   return (
@@ -16,6 +18,9 @@ export default function App() {
         <Route path="/location" element={<TermsDocumentPage type="LOCATION" />} />
         <Route path="/marketing" element={<TermsDocumentPage type="MARKETING" />} />
         <Route path="/feedback" element={<FeedbackPage />} />
+        {/* 공지사항: 콘솔에서 작성한 발행 공지를 공개 API로 받아 렌더. */}
+        <Route path="/notice" element={<AnnouncementsPage />} />
+        <Route path="/notice/:announcementId" element={<AnnouncementDetailPage />} />
         <Route path="*" element={<HomePage />} />
       </Route>
     </Routes>

@@ -312,6 +312,19 @@ a:hover {
   font-weight: 700;
   letter-spacing: -0.01em;
 }
+/* 실제 다운로드 링크(App Store) — 텍스트 밑줄 제거 + 호버 반응 */
+a.store-badge {
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+a.store-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.28);
+}
+/* 출시 예정 배지 — 살짝 흐리게 구분 */
+.store-badge--soon {
+  opacity: 0.55;
+}
 
 @media (min-width: 880px) {
   .hero-copy .store-badges {
@@ -1362,6 +1375,102 @@ section.about p strong {
   line-height: 1.7;
   color: var(--text);
   margin-top: 24px;
+}
+
+/* ── Announcements (공지사항) ── */
+.notice-empty {
+  color: var(--text-muted);
+  font-size: 15px;
+  padding: 32px 0;
+}
+
+.notice-list {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.notice-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.notice-item__link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 4px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.notice-item__link:hover {
+  background: var(--surface-alt);
+}
+
+.notice-item__title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.notice-pin {
+  margin-right: 6px;
+}
+
+.notice-item__date {
+  color: var(--text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.notice-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.notice-badge--notice {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.notice-badge--maintenance {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.notice-badge--event {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.notice-detail__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.notice-back {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 14px;
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.notice-back:hover {
+  color: var(--primary-dark);
 }
 
 /* ── Feedback page ── */
