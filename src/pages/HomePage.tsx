@@ -18,8 +18,9 @@ import {
 } from "../components/AppIcons";
 
 const APP_STORE_URL = "https://apps.apple.com/kr/app/pawstamp/id6778623989";
+const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=com.pawstamp.mobile";
 
-/** 스토어 배지. iOS 는 출시되어 실제 App Store 링크로 연결, Android(Google Play)는 아직 출시 예정. */
+/** 스토어 배지. iOS·Android 모두 출시되어 각각 App Store / Google Play 로 연결. */
 function StoreBadges() {
   return (
     <div className="store-badges">
@@ -36,13 +37,19 @@ function StoreBadges() {
           <span className="store-badge-name">App Store</span>
         </span>
       </a>
-      <span className="store-badge store-badge--soon" aria-label="Google Play 출시 예정">
+      <a
+        className="store-badge"
+        href={GOOGLE_PLAY_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Google Play 에서 발도장 다운로드"
+      >
         <GooglePlayIcon className="store-badge-ic" />
         <span className="store-badge-text">
-          <span className="store-badge-top">출시 예정</span>
+          <span className="store-badge-top">지금 다운로드</span>
           <span className="store-badge-name">Google Play</span>
         </span>
-      </span>
+      </a>
     </div>
   );
 }
@@ -112,7 +119,7 @@ export function HomePage() {
       <section className="hero">
         <div className="container hero-grid">
           <div className="hero-copy">
-            <span className="hero-badge">iOS 출시 · Android 준비 중</span>
+            <span className="hero-badge">iOS · Android 출시</span>
             <h1>
               반려동물 건강 기록을
               <br />한 곳에서 안전하게
@@ -123,7 +130,7 @@ export function HomePage() {
             </p>
             <p className="sub">가족이 함께 한 마리의 기록을 공유할 수 있고, AI가 알러지 검사지·접종 증빙을 자동으로 정리해 줍니다.</p>
             <StoreBadges />
-            <span className="cta-note">App Store 출시 · Google Play 준비 중 · 강아지·고양이 보호자를 위한 무료 건강 기록 앱</span>
+            <span className="cta-note">App Store · Google Play 출시 · 강아지·고양이 보호자를 위한 무료 건강 기록 앱</span>
           </div>
           <div className="hero-visual">
             <PhoneMockup />
