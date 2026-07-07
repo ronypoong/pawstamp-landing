@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="오리 연어 단백질 사료">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a5f3fc"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.4" r="0.65">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/>
+  <rect width="600" height="600" fill="url(#glow)"/>
+  <g fill="#ffffff" opacity="0.16">
+    <g transform="translate(90,110) scale(1.1)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(510,150) scale(0.8) rotate(20)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(120,500) scale(0.9) rotate(-15)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(500,500) scale(1) rotate(10)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+  </g>
+  <circle cx="300" cy="300" r="120" fill="#ffffff" opacity="0.92"/>
+  <!-- fish -->
+  <g transform="translate(6,0)">
+    <ellipse cx="286" cy="300" rx="82" ry="50" fill="#0891b2"/>
+    <path d="M366 300 L420 262 Q404 300 420 338 Z" fill="#0891b2"/>
+    <path d="M280 262 Q300 240 320 262 Z" fill="#22d3ee"/>
+    <circle cx="244" cy="288" r="12" fill="#ffffff"/><circle cx="244" cy="288" r="5.5" fill="#0e3a4a"/>
+    <path d="M300 300 q22 -14 44 0 q-22 14 -44 0 Z" fill="#22d3ee" opacity="0.8"/>
+  </g>
+</svg>
