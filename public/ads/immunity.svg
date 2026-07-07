@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="면역 관리 영양제">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fecdd3"/><stop offset="1" stop-color="#fb7185"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.4" r="0.65"><stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/><rect width="600" height="600" fill="url(#glow)"/>
+  <g fill="#ffffff" opacity="0.16">
+    <g transform="translate(90,110) scale(1.1)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(510,150) scale(0.8) rotate(20)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(120,500) scale(0.9) rotate(-15)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(500,500) scale(1) rotate(10)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+  </g>
+  <circle cx="300" cy="300" r="120" fill="#ffffff" opacity="0.92"/>
+  <path d="M300 208 L382 240 L382 300 C382 356 344 390 300 406 C256 390 218 356 218 300 L218 240 Z" fill="#e11d48"/>
+  <rect x="288" y="272" width="24" height="76" rx="8" fill="#ffffff"/>
+  <rect x="262" y="298" width="76" height="24" rx="8" fill="#ffffff"/>
+</svg>

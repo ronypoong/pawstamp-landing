@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="노즈워크 스트레스 완화">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ddd6fe"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.4" r="0.65"><stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/><rect width="600" height="600" fill="url(#glow)"/>
+  <g fill="#ffffff" opacity="0.16">
+    <g transform="translate(90,110) scale(1.1)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(510,150) scale(0.8) rotate(20)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(120,500) scale(0.9) rotate(-15)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(500,500) scale(1) rotate(10)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+  </g>
+  <circle cx="300" cy="300" r="120" fill="#ffffff" opacity="0.92"/>
+  <!-- dog nose -->
+  <path d="M216 322 a84 62 0 0 1 168 0 c0 46 -52 74 -84 74 c-32 0 -84 -28 -84 -74 Z" fill="#7c3aed"/>
+  <ellipse cx="300" cy="300" rx="52" ry="20" fill="#a78bfa"/>
+  <ellipse cx="272" cy="342" rx="12" ry="16" fill="#3b0764"/>
+  <ellipse cx="328" cy="342" rx="12" ry="16" fill="#3b0764"/>
+  <path d="M300 356 v22" stroke="#3b0764" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" role="img" aria-label="오메가3 건강 관리">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d1fae5"/><stop offset="1" stop-color="#34d399"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.4" r="0.65"><stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#bg)"/><rect width="600" height="600" fill="url(#glow)"/>
+  <g fill="#ffffff" opacity="0.16">
+    <g transform="translate(90,110) scale(1.1)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(510,150) scale(0.8) rotate(20)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(120,500) scale(0.9) rotate(-15)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+    <g transform="translate(500,500) scale(1) rotate(10)"><ellipse cx="0" cy="15" rx="17" ry="14"/><ellipse cx="-17" cy="-7" rx="6.5" ry="9"/><ellipse cx="-6" cy="-17" rx="6.5" ry="9"/><ellipse cx="6" cy="-17" rx="6.5" ry="9"/><ellipse cx="17" cy="-7" rx="6.5" ry="9"/></g>
+  </g>
+  <circle cx="300" cy="300" r="120" fill="#ffffff" opacity="0.92"/>
+  <!-- oil drop -->
+  <path d="M300 244 c34 50 60 78 60 112 a60 60 0 0 1 -120 0 c0 -34 26 -62 60 -112 Z" fill="#059669"/>
+  <ellipse cx="278" cy="352" rx="14" ry="20" fill="#ffffff" opacity="0.55"/>
+</svg>
