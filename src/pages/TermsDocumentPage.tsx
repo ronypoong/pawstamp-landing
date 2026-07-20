@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { fetchPublicTerms, type PublicTerms, type TermsType } from "../lib/termsApi";
+import {
+  fetchPublicTerms,
+  fetchPublicTermsVersion,
+  fetchPublicTermsVersions,
+  type PublicTerms,
+  type PublicTermsVersion,
+  type TermsType,
+} from "../lib/termsApi";
 
 // 약관 종류별 페이지 메타데이터. document.title/meta-description은 클라이언트에서 갱신한다.
 const META: Record<TermsType, { title: string; description: string }> = {
@@ -20,6 +27,8 @@ function formatEffectiveAt(value: string | null): string | null {
 
 export function TermsDocumentPage({ type }: { type: TermsType }) {
   const [doc, setDoc] = useState<PublicTerms | null>(null);
+  const [versions, setVersions] = useState<PublicTermsVersion[]>([]);
+  const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -35,21 +44,44 @@ export function TermsDocumentPage({ type }: { type: TermsType }) {
     };
   }, [type]);
 
+  // type 변경 시: 현재본 본문 + 버전 이력을 함께 로드. 선택 버전은 현재본으로 초기화.
   useEffect(() => {
     let cancelled = false;
     setDoc(null);
     setError(null);
+    setVersions([]);
+    setSelectedVersion(null);
     fetchPublicTerms(type)
       .then((data) => {
-        if (!cancelled) setDoc(data);
+        if (!cancelled) {
+          setDoc(data);
+          setSelectedVersion(data.version);
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "약관을 불러오지 못했습니다.");
+      });
+    fetchPublicTermsVersions(type)
+      .then((list) => {
+        if (!cancelled) setVersions(list);
+      })
+      .catch(() => {
+        /* 이력 로드 실패는 치명적이지 않음 — 현재본만 노출 */
       });
     return () => {
       cancelled = true;
     };
   }, [type]);
+
+  const handleSelectVersion = (version: string) => {
+    if (version === selectedVersion) return;
+    setSelectedVersion(version);
+    setDoc(null);
+    setError(null);
+    fetchPublicTermsVersion(type, version)
+      .then((data) => setDoc(data))
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "약관을 불러오지 못했습니다."));
+  };
 
   if (error) {
     return (
@@ -75,6 +107,28 @@ export function TermsDocumentPage({ type }: { type: TermsType }) {
     <article className="privacy-page">
       <h1>{doc.title}</h1>
       {effectiveLabel ? <p className="updated">시행일: {effectiveLabel}</p> : null}
+      {versions.length > 1 ? (
+        <p className="updated" style={{ marginTop: 8 }}>
+          <label>
+            개정 이력:{" "}
+            <select
+              value={selectedVersion ?? doc.version}
+              onChange={(e) => handleSelectVersion(e.target.value)}
+              style={{ font: "inherit", padding: "2px 6px" }}
+            >
+              {versions.map((v) => {
+                const eff = formatEffectiveAt(v.effectiveAt);
+                const tag = v.status === "PUBLISHED" ? "현재" : "종전";
+                return (
+                  <option key={v.version} value={v.version}>
+                    v{v.version} ({tag}){eff ? ` · ${eff} 시행` : ""}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+        </p>
+      ) : null}
       <div className="terms-body">{doc.content}</div>
     </article>
   );
