@@ -6,6 +6,7 @@ import { FeedbackPage } from "./pages/FeedbackPage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
 import { AnnouncementDetailPage } from "./pages/AnnouncementDetailPage";
 import { InvitePage } from "./pages/InvitePage";
+import { PersonaTeaserPage } from "./pages/PersonaTeaserPage";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/notice" element={<AnnouncementsPage />} />
         <Route path="/notice/:announcementId" element={<AnnouncementDetailPage />} />
         {/* 공동보호자 초대 링크. 앱 설치 시 OS 가 앱을 바로 열고, 미설치면 이 페이지로 설치 유도. */}
+        <Route path="/i/type/:typeCode" element={<PersonaTeaserPage />} />
         <Route path="/i/:code" element={<InvitePage />} />
         <Route path="*" element={<HomePage />} />
       </Route>
