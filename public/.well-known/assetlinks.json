@@ -1,0 +1,12 @@
+[
+  {
+    "relation": [ "delegate_permission/common.handle_all_urls" ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.pawstamp.mobile",
+      "sha256_cert_fingerprints": [
+        "B6:26:D3:7F:79:09:8C:1F:E6:C6:27:D6:A7:FF:A2:3D:9B:3E:0C:91:05:6D:3C:A6:85:96:83:DD:2F:C3:ED:F8"
+      ]
+    }
+  }
+]

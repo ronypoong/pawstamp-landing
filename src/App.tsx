@@ -5,6 +5,7 @@ import { TermsDocumentPage } from "./pages/TermsDocumentPage";
 import { FeedbackPage } from "./pages/FeedbackPage";
 import { AnnouncementsPage } from "./pages/AnnouncementsPage";
 import { AnnouncementDetailPage } from "./pages/AnnouncementDetailPage";
+import { InvitePage } from "./pages/InvitePage";
 
 export default function App() {
   return (
@@ -21,6 +22,8 @@ export default function App() {
         {/* 공지사항: 콘솔에서 작성한 발행 공지를 공개 API로 받아 렌더. */}
         <Route path="/notice" element={<AnnouncementsPage />} />
         <Route path="/notice/:announcementId" element={<AnnouncementDetailPage />} />
+        {/* 공동보호자 초대 링크. 앱 설치 시 OS 가 앱을 바로 열고, 미설치면 이 페이지로 설치 유도. */}
+        <Route path="/i/:code" element={<InvitePage />} />
         <Route path="*" element={<HomePage />} />
       </Route>
     </Routes>
