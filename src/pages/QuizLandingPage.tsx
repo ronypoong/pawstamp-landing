@@ -14,14 +14,18 @@ const THEME: Record<string, { from: string; to: string; accent: string; glow: st
   cool: { from: "#8e9bff", to: "#6d7be0", accent: "#3b4bc8", glow: "#e0e4ff", emoji: "🌙" },
 };
 
-function detectStore(referrer: string): { url: string; label: string } {
+// 기기별 스토어 버튼. 모바일은 해당 OS 하나만, 데스크톱/미상은 둘 다 노출(iOS 유실 방지).
+function storeLinks(referrer: string): { url: string; label: string }[] {
   const ua = typeof navigator === "undefined" ? "" : navigator.userAgent || "";
-  if (/iphone|ipad|ipod/i.test(ua)) return { url: APP_STORE_URL, label: "App Store" };
   // Play 스토어는 install referrer로 설치 출처를 넘길 수 있음(광고 성과 측정용).
-  const url = referrer
-    ? `${GOOGLE_PLAY_URL}&referrer=${encodeURIComponent(referrer)}`
-    : GOOGLE_PLAY_URL;
-  return { url, label: "Google Play" };
+  const play = {
+    url: referrer ? `${GOOGLE_PLAY_URL}&referrer=${encodeURIComponent(referrer)}` : GOOGLE_PLAY_URL,
+    label: "Google Play",
+  };
+  const appStore = { url: APP_STORE_URL, label: "App Store" };
+  if (/iphone|ipad|ipod/i.test(ua)) return [appStore];
+  if (/android/i.test(ua)) return [play];
+  return [appStore, play];
 }
 
 /**
@@ -47,7 +51,7 @@ export function QuizLandingPage() {
     }
     return parts.length ? parts.join("&") : "utm_source=quiz_landing";
   }, []);
-  const store = useMemo(() => detectStore(referrer), [referrer]);
+  const stores = useMemo(() => storeLinks(referrer), [referrer]);
 
   useEffect(() => {
     document.title = "내 강아지 성격유형 검사 · 발도장";
@@ -119,7 +123,7 @@ export function QuizLandingPage() {
         </p>
 
         {failed ? (
-          <Fallback store={store} />
+          <Fallback stores={stores} />
         ) : !event ? (
           <p style={{ color: "#8b8079", marginTop: 40 }}>불러오는 중…</p>
         ) : phase === "intro" ? (
@@ -253,9 +257,7 @@ export function QuizLandingPage() {
             <p style={{ fontSize: 13, color: "#8b8079", margin: "0 0 18px", lineHeight: 1.6 }}>
               발도장 앱에서 카드를 저장하고, 매일 산책·건강도 기록해보세요.
             </p>
-            <CtaButton onClick={() => (window.location.href = store.url)}>
-              {store.label}에서 발도장 받기
-            </CtaButton>
+            <StoreButtons stores={stores} />
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
               <GhostButton onClick={share}>친구에게 공유</GhostButton>
               <GhostButton onClick={restart}>다시 하기</GhostButton>
@@ -314,13 +316,25 @@ function GhostButton({ children, onClick }: { children: React.ReactNode; onClick
   );
 }
 
-function Fallback({ store }: { store: { url: string; label: string } }) {
+function StoreButtons({ stores }: { stores: { url: string; label: string }[] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {stores.map((s) => (
+        <CtaButton key={s.label} onClick={() => (window.location.href = s.url)}>
+          {s.label}에서 발도장 받기
+        </CtaButton>
+      ))}
+    </div>
+  );
+}
+
+function Fallback({ stores }: { stores: { url: string; label: string }[] }) {
   return (
     <section style={{ marginTop: 30 }}>
       <div aria-hidden style={{ fontSize: 56, marginBottom: 16 }}>🐾</div>
       <h1 style={{ fontSize: 22, fontWeight: 800, color: "#2b2520", margin: "0 0 10px" }}>내 강아지 성격유형 검사</h1>
       <p style={{ fontSize: 14, color: "#8b8079", margin: "0 0 24px" }}>발도장 앱에서 30초 성격 테스트를 즐겨보세요.</p>
-      <CtaButton onClick={() => (window.location.href = store.url)}>{store.label}에서 발도장 받기</CtaButton>
+      <StoreButtons stores={stores} />
     </section>
   );
 }
