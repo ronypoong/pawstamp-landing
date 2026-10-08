@@ -5,17 +5,27 @@
 }
 
 :root {
-  --bg: #f5f9f6;
-  --surface: #ffffff;
-  --surface-alt: #f0fdf4;
+  --bg: #fbf4ee;
+  --bg-deep: #f3ebe2;
+  --surface: #fffcf9;
+  --surface-alt: #f8f0e8;
+  --text: #2e2823;
+  --text-muted: #5a5049;
+  --text-subtle: #8b8079;
+  --border: #e6dace;
+  --border-subtle: #f0e8df;
+  /* CTA 차콜 — 앱 아이콘·앱 화면과 같은 웜 차콜 축 */
+  --ink: #2e2823;
+  /* 초록은 '안심·성장' 의미색으로만 */
   --primary: #16a34a;
   --primary-dark: #15803d;
   --primary-soft: #dcfce7;
-  --text: #0f172a;
-  --text-muted: #475569;
-  --border: #e3e9e4;
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  --shadow-soft: 0 2px 8px rgba(15, 23, 42, 0.05);
+  /* 살구는 퀴즈·강조 전용. 작은 글씨는 --apricot-ink(대비 4.5:1) */
+  --apricot: #e07a3f;
+  --apricot-ink: #b8571f;
+  --apricot-soft: #ffe8d6;
+  --shadow: 0 12px 32px rgba(185, 169, 150, 0.28);
+  --shadow-soft: 0 2px 8px rgba(185, 169, 150, 0.18);
 }
 
 html,
@@ -29,7 +39,8 @@ body {
     "Noto Sans KR", sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.65;
+  line-height: 1.7;
+  word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -55,9 +66,33 @@ a:hover {
   top: 0;
   z-index: 10;
   padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(255, 252, 249, 0.9);
   backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+}
+
+.nav-get-app {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nav-links a.nav-get-app {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 16px;
+    margin-left: 6px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .nav-links a.nav-get-app:hover {
+    background: #4a4039;
+    color: #fff;
+  }
 }
 
 .site-nav {
@@ -120,159 +155,191 @@ a:hover {
     gap: 2px;
   }
   .nav-links a {
-    padding: 6px 10px;
+    padding: 10px 8px;
     font-size: 13px;
   }
 }
 
 /* ─── Hero ─────────────────────────────────── */
 .hero {
-  padding: 88px 0 64px;
+  position: relative;
+  padding: 56px 0 72px;
   text-align: center;
   overflow: hidden;
   background:
-    radial-gradient(70% 70% at 70% 0%, var(--surface-alt) 0%, rgba(240, 253, 244, 0) 70%);
+    radial-gradient(60% 60% at 85% 10%, var(--apricot-soft) 0%, rgba(255, 232, 214, 0) 70%),
+    linear-gradient(180deg, var(--bg) 0%, var(--surface-alt) 100%);
+}
+
+.hero-trail {
+  position: absolute;
+  left: 2%;
+  bottom: -20px;
+  width: 260px;
+  height: auto;
+  fill: var(--ink);
+  opacity: 0.06;
+  pointer-events: none;
 }
 
 .hero-grid {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 48px;
+  gap: 40px;
   align-items: center;
 }
 
-.hero-visual {
-  display: flex;
-  justify-content: center;
-}
-
-@media (min-width: 880px) {
-  .hero {
-    text-align: left;
-    padding: 96px 0 72px;
-  }
-  .hero-grid {
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 40px;
-  }
-  .hero-copy .cta-row {
-    justify-content: flex-start;
-  }
-  .hero-copy p.lead,
-  .hero-copy p.sub {
-    margin-left: 0;
-    margin-right: 0;
-  }
-  .hero-visual {
-    justify-content: flex-end;
-  }
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 14px;
-  margin-bottom: 20px;
+.hero-eyebrow {
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 18px;
   border-radius: 999px;
-  background: var(--primary-soft);
-  color: var(--primary-dark);
+  background: var(--apricot-soft);
+  color: var(--apricot-ink);
   font-weight: 700;
   font-size: 13px;
-  letter-spacing: -0.01em;
-}
-
-.hero-badge::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--primary);
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
 }
 
 .hero h1 {
-  font-size: clamp(30px, 5vw, 48px);
+  font-size: clamp(32px, 5vw, 48px);
   font-weight: 800;
   margin: 0 0 18px;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.hero h1 .hl {
+  color: inherit;
+  background: linear-gradient(transparent 62%, #bbf7d0 62%);
+  padding: 0 2px;
 }
 
 .hero p.lead {
   font-size: clamp(16px, 2vw, 18px);
   color: var(--text-muted);
-  margin: 0 auto 12px;
-  max-width: 620px;
+  margin: 0 auto 28px;
+  max-width: 30em;
 }
 
-.hero p.sub {
-  font-size: 15px;
-  color: var(--text-muted);
-  margin: 0 auto 32px;
-  max-width: 600px;
-}
-
-.cta-row {
+.trust-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
   justify-content: center;
-  align-items: center;
-}
-
-.cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 15px 30px;
-  background: linear-gradient(135deg, #1aa85a, #15803d);
-  color: white;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 16px;
-  box-shadow: 0 6px 16px rgba(21, 128, 61, 0.28);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(21, 128, 61, 0.34);
-  text-decoration: none;
-}
-
-.cta-icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.cta-secondary {
-  display: inline-flex;
-  align-items: center;
-  padding: 14px 22px;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-weight: 600;
-  font-size: 15px;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.cta-secondary:hover {
-  border-color: var(--primary);
-  background: var(--surface-alt);
-  text-decoration: none;
-}
-
-.cta-note {
-  display: block;
-  margin-top: 16px;
+  gap: 8px 18px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
   font-size: 13px;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--text-subtle);
 }
 
-/* ─── 스토어 배지 (출시 예정) ───────────────── */
+.trust-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trust-check {
+  width: 14px;
+  height: 14px;
+  color: var(--primary);
+}
+
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-blob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 360px;
+  height: 360px;
+  max-width: 90vw;
+  max-height: 90vw;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transform: translate(-50%, -55%);
+}
+
+.hero-visual .pm {
+  position: relative;
+  text-align: left;
+}
+
+.stamp-badge {
+  position: absolute;
+  left: calc(50% - 190px);
+  bottom: 70px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 2px dashed var(--primary);
+  background: var(--surface);
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  transform: rotate(-10deg);
+  box-shadow: var(--shadow-soft);
+}
+
+@media (max-width: 879px) {
+  .stamp-badge {
+    left: calc(50% - 160px);
+    bottom: 110px;
+    width: 76px;
+    height: 76px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 880px) {
+  .hero {
+    text-align: left;
+    padding: 96px 0 104px;
+  }
+  .hero-trail {
+    left: 38%;
+    bottom: 20px;
+    width: 300px;
+  }
+  .hero-grid {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 40px;
+  }
+  .hero p.lead {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .trust-chips {
+    justify-content: flex-start;
+  }
+  .hero-visual {
+    justify-content: flex-end;
+  }
+  .hero-blob {
+    left: auto;
+    right: -32px;
+    transform: translateY(-55%);
+  }
+  .stamp-badge {
+    left: auto;
+    right: 250px;
+  }
+}
+
+/* ─── 스토어 배지 ─────────────────────────── */
 .store-badges {
   display: flex;
   flex-wrap: wrap;
@@ -282,16 +349,24 @@ a:hover {
 .store-badge {
   display: inline-flex;
   align-items: center;
-  gap: 11px;
-  padding: 11px 20px;
-  border-radius: 15px;
-  background: #0f172a;
+  gap: 10px;
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 14px;
+  background: var(--ink);
   color: #fff;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.22);
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(46, 40, 35, 0.22);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.store-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(46, 40, 35, 0.28);
+  text-decoration: none;
 }
 .store-badge-ic {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 }
 .store-badge-text {
@@ -302,28 +377,26 @@ a:hover {
   text-align: left;
 }
 .store-badge-top {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  opacity: 0.82;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.75;
 }
 .store-badge-name {
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-/* 실제 다운로드 링크(App Store) — 텍스트 밑줄 제거 + 호버 반응 */
-a.store-badge {
-  text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+.store-badge--inverse {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
 }
-a.store-badge:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.28);
-}
-/* 출시 예정 배지 — 살짝 흐리게 구분 */
-.store-badge--soon {
-  opacity: 0.55;
+/* 모바일: 해당 OS 배지 1개만 가로 100% */
+.store-badges--single .store-badge {
+  width: 100%;
+  max-width: 360px;
+  height: 56px;
+  justify-content: center;
 }
 
 @media (min-width: 880px) {
@@ -331,15 +404,6 @@ a.store-badge:hover {
     justify-content: flex-start;
   }
 }
-
-/* 마무리 CTA(그린 배너) 위에서는 배지 그림자를 줄여 자연스럽게 */
-.download-cta .store-badges {
-  margin-top: 4px;
-}
-.download-cta .store-badge {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-}
-
 /* ─────────── 앱 화면 목업 (실제 발도장 5개 탭 화면 자동 전환) ─────────── */
 .pm {
   --pm-text: #0f172a;
@@ -1030,176 +1094,302 @@ a.store-badge:hover {
   background: var(--primary);
 }
 
-/* ─── Download CTA (closing) ───────────────── */
-.download-cta {
-  margin: 24px auto 72px;
-  padding: 48px 32px;
-  border-radius: 24px;
-  text-align: center;
-  background: linear-gradient(135deg, #16a34a, #15803d);
-  color: #fff;
-}
-
-.download-cta h2 {
-  margin: 0 0 10px;
-  font-size: clamp(22px, 3vw, 28px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.download-cta p {
-  margin: 0 auto 24px;
-  max-width: 460px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 15px;
-}
-
-.download-cta .cta {
-  background: #fff;
-  color: var(--primary-dark);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-}
-
-.download-cta .cta:hover {
-  background: #f8fafc;
-}
-
 /* ─── Section eyebrow (shared) ─────────────── */
 .section-eyebrow {
   display: inline-block;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: var(--primary-dark);
+  color: var(--apricot-ink);
 }
 
-/* ─── About / generic section ──────────────── */
-section.about {
-  padding: 64px 0;
+/* ─── 성격검사 진입 카드 ───────────────────── */
+.quiz-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: -32px;
 }
 
-section.about h2 {
-  font-size: clamp(24px, 3.5vw, 32px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 20px;
-}
-
-section.about p {
-  color: var(--text-muted);
-  margin: 0 0 14px;
-  max-width: 760px;
-}
-
-section.about p strong {
+.quiz-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #fff9f0, var(--apricot-soft));
+  border: 1px solid #f6d9bf;
+  box-shadow: var(--shadow-soft);
   color: var(--text);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.quiz-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+}
+
+.quiz-emoji {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 28px;
+}
+
+.quiz-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quiz-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--apricot-ink);
+}
+
+.quiz-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.quiz-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+
+.quiz-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.quiz-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.quiz-arrow {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--apricot);
+  color: #fff;
+  font-size: 20px;
   font-weight: 700;
 }
 
-.about-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-top: 32px;
+@media (max-width: 520px) {
+  .quiz-card {
+    gap: 12px;
+    padding: 16px;
+  }
+  .quiz-emoji {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+  .quiz-title {
+    font-size: 16px;
+  }
 }
 
-.about-stat {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px 22px;
-  box-shadow: var(--shadow-soft);
+/* ─── 3가치 ────────────────────────────────── */
+.values {
+  padding-block: 80px 64px;
 }
 
-.about-stat strong {
-  display: block;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--primary-dark);
-  letter-spacing: -0.02em;
-}
-
-.about-stat span {
-  display: block;
-  margin-top: 6px;
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
-/* ─── Features grid ────────────────────────── */
-.features-section {
-  padding: 64px 0;
-  background: var(--surface-alt);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.features-head {
+.values-head {
   text-align: center;
-  max-width: 640px;
-  margin: 0 auto 40px;
+  margin-bottom: 36px;
 }
 
-.features-head h2 {
-  font-size: clamp(24px, 3.5vw, 32px);
+.values-head h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.6vw, 34px);
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 0 0 12px;
+  line-height: 1.3;
 }
 
-.features-sub {
-  margin: 0;
-  font-size: 16px;
-  color: var(--text-muted);
-}
-
-.features {
+.values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
-.feature {
+@media (min-width: 880px) {
+  .values-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .values-grid .value-card:nth-child(2) {
+    transform: translateY(-12px);
+  }
+}
+
+.value-card {
+  padding: 28px;
+  border-radius: 24px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 28px 24px;
+  border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-soft);
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
 
-.feature:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow);
-  border-color: var(--primary-soft);
-}
-
-.feature-icon {
-  display: inline-grid;
+.value-icon {
+  display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  margin-bottom: 16px;
-  border-radius: 14px;
-  background: var(--primary-soft);
-  color: var(--primary-dark);
+  width: 48px;
+  height: 48px;
+  margin-bottom: 18px;
+  border-radius: 16px;
 }
 
-.feature-icon svg {
-  width: 26px;
-  height: 26px;
+.value-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
-.feature h3 {
+.value-card--safe .value-icon { background: var(--primary-soft); color: var(--primary-dark); }
+.value-card--grow .value-icon { background: #fef3c7; color: #b45309; }
+.value-card--together .value-icon { background: #fce7f3; color: #be185d; }
+
+.value-card h3 {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
-.feature p {
-  margin: 0;
-  color: var(--text-muted);
+.value-card p {
+  margin: 0 0 18px;
   font-size: 15px;
+  color: var(--text-muted);
+}
+
+.value-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.value-chips li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg-deep);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ─── 추모 한 줄 밴드 ─────────────────────── */
+.memorial-band {
+  padding-block: 32px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.memorial-band .container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.memorial-ic {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+/* ─── Download CTA (closing) ───────────────── */
+.download-cta {
+  position: relative;
+  overflow: hidden;
+  margin: 64px auto 56px;
+  padding: 40px 24px;
+  border-radius: 32px;
+  text-align: center;
+  background: var(--ink);
+  color: #fff;
+}
+
+@media (min-width: 880px) {
+  .download-cta {
+    padding: 56px;
+  }
+}
+
+.download-trail {
+  position: absolute;
+  right: -20px;
+  bottom: -40px;
+  width: 220px;
+  height: auto;
+  fill: #fff;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.download-cta h2 {
+  position: relative;
+  margin: 0 0 10px;
+  font-size: clamp(26px, 3.4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.download-cta p {
+  position: relative;
+  margin: 0 auto 26px;
+  max-width: 460px;
+  color: #e4dbd0;
+  font-size: 16px;
+}
+
+.download-cta .store-badges {
+  position: relative;
+}
+
+.download-quiz-link {
+  position: relative;
+  display: inline-block;
+  margin-top: 22px;
+  padding: 10px 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffd2b0;
+}
+
+.download-quiz-link:hover {
+  color: #ffe8d6;
 }
 
 /* ─── Policies callout (home) ──────────────── */
@@ -1240,11 +1430,79 @@ section.about p strong {
   color: var(--primary-dark);
   font-weight: 600;
   font-size: 14px;
+  text-decoration: underline;
 }
 
-.policies-links a:hover {
-  background: #dbeafe;
+/* ─── 모바일 고정 설치 바 ─────────────────── */
+.home--mobile {
+  padding-bottom: 76px;
+}
+
+.sticky-install {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 252, 249, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border-subtle);
+  transform: translateY(100%);
+  transition: transform 0.2s ease;
+}
+
+.sticky-install.is-visible {
+  transform: translateY(0);
+}
+
+.sticky-install-icon {
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+
+.sticky-install-brand {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.sticky-install-brand strong {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.sticky-install-brand span {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.sticky-install-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sticky-install-btn:hover {
   text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-install,
+  .quiz-card,
+  .store-badge {
+    transition: none;
+  }
 }
 
 /* ─── Footer ───────────────────────────────── */

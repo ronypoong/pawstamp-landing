@@ -9,10 +9,9 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "소개", to: "/#about" },
   { label: "기능", to: "/#features" },
+  { label: "성격테스트", to: "/quiz", exact: true },
   { label: "공지사항", to: "/notice" },
-  { label: "개인정보", to: "/privacy", exact: true },
   { label: "문의", to: "/feedback", exact: true },
 ];
 
@@ -53,6 +52,9 @@ export function Header() {
               </NavLink>
             );
           })}
+          <a className="nav-get-app" href="/#download">
+            앱 받기
+          </a>
         </nav>
       </div>
     </header>
