@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "4ZSWWWQ5ZT.com.pawstamp.mobile",
-        "paths": [ "/i/*" ]
+        "paths": [ "NOT /i/pass/*", "/i/*" ]
       }
     ]
   }

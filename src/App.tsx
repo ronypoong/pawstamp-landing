@@ -8,12 +8,15 @@ import { AnnouncementDetailPage } from "./pages/AnnouncementDetailPage";
 import { InvitePage } from "./pages/InvitePage";
 import { PersonaTeaserPage } from "./pages/PersonaTeaserPage";
 import { QuizLandingPage } from "./pages/QuizLandingPage";
+import { VaccinePassPage } from "./pages/VaccinePassPage";
 
 export default function App() {
   return (
     <Routes>
       {/* 광고 랜딩: 헤더/푸터 없는 집중형 퍼널이라 Layout 밖에 둔다. */}
       <Route path="/quiz" element={<QuizLandingPage />} />
+      {/* 접종 확인 QR: 매장 직원이 웹으로 여는 단독 페이지. 반드시 /i/:code 보다 먼저 매칭되도록 Layout 밖·위에 둔다. */}
+      <Route path="/i/pass/:token" element={<VaccinePassPage />} />
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
         {/* 약관 페이지는 모두 BE의 공개 약관 API에서 본문을 받아 렌더한다. 콘솔에서 발행본을 갱신하면 즉시 반영. */}
