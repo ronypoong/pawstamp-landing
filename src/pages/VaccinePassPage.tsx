@@ -5,6 +5,9 @@ import { APP_STORE_URL, GOOGLE_PLAY_URL, detectStoreTarget } from "../lib/storeT
 import {
   VaccinePassClosedError,
   fetchVaccinePass,
+  passScope,
+  type EmergencyContact,
+  type PassScope,
   type VaccinePass,
   type VaccinePassItem,
   type VaccineStatus,
@@ -58,6 +61,48 @@ function formatKst(iso: string): string {
   }).formatToParts(date);
   const p = (t: string) => parts.find((x) => x.type === t)?.value ?? "";
   return `${p("year")}.${p("month")}.${p("day")} ${p("hour")}:${p("minute")}`;
+}
+
+/** 만료 시각 표시용: KST 자정(00:00) 만료는 전날 23:59 로 보여 "다음날 00:00까지" 혼동을 막는다. */
+function formatKstUntil(iso: string): string {
+  const s = formatKst(iso);
+  if (!s.endsWith(" 00:00")) return s;
+  return formatKst(new Date(new Date(iso).getTime() - 60_000).toISOString());
+}
+
+/** ISO 시각 → KST "YYYY-MM-DD". 자정 만료(다음날 00:00)는 그 전날로 보이도록 1ms 당긴다. */
+function kstDateKey(ms: number): string {
+  return new Date(ms + 9 * 3600_000).toISOString().slice(0, 10);
+}
+
+const WEEKDAY = ["일", "월", "화", "수", "목", "금", "토"];
+
+/** 만료 시각 → "오늘까지" / "내일까지" / "10/15(목)까지" */
+function untilLabel(iso: string): string {
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return "";
+  const key = kstDateKey(t - 1);
+  const today = kstDateKey(Date.now());
+  if (key === today) return "오늘까지";
+  if (key === kstDateKey(Date.now() + 24 * 3600_000)) return "내일까지";
+  const [, m, d] = key.split("-").map(Number);
+  const wd = WEEKDAY[new Date(`${key}T00:00:00Z`).getUTCDay()];
+  return `${m}/${d}(${wd})까지`;
+}
+
+const SCOPE_LABEL: Record<Exclude<PassScope, "ENTRY">, string> = {
+  CARE: "돌봄 맡기기",
+  GROOMING: "미용 맡기기",
+};
+
+/** tel: 링크용 — 숫자(와 선행 +)만 남긴다. */
+function telHref(phone: string): string {
+  const digits = phone.replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
+  return `tel:${digits}`;
+}
+
+function has(v: string | null | undefined): v is string {
+  return !!v && v.trim().length > 0;
 }
 
 function StatusIcon({ status }: { status: VaccineStatus | "closed" }) {
@@ -195,14 +240,23 @@ export function VaccinePassPage() {
 }
 
 function PassContent({ data }: { data: VaccinePass }) {
+  const scope = passScope(data);
   const items = data.requiredVaccinations;
   const status = overallStatus(items);
   const allMissing = items.every((i) => i.status === "missing");
   const title = allMissing ? "접종 기록이 아직 없어요" : STATUS_TITLE[status];
+  const compact = scope !== "ENTRY";
+  const guide = data.careGuide ?? null;
 
   return (
     <>
-      <section className={`pass-status pass-status--${status}`} role="status">
+      {scope !== "ENTRY" && (
+        <p className="pass-scope">
+          {SCOPE_LABEL[scope]} · {untilLabel(data.expiresAt)}
+        </p>
+      )}
+
+      <section className={`pass-status pass-status--${status}${compact ? " pass-status--compact" : ""}`} role="status">
         <span className="pass-status-icon">
           <StatusIcon status={status} />
         </span>
@@ -217,37 +271,32 @@ function PassContent({ data }: { data: VaccinePass }) {
         </div>
       </div>
 
-      <ul className="pass-list">
-        {items.map((item) => (
-          <li key={item.code} className="pass-item">
-            <div className="pass-item-head">
-              <span className="pass-item-name">
-                {item.name}
-                {item.matchedVaccineName && item.matchedVaccineName !== item.name && (
-                  <small className="pass-item-matched">{item.matchedVaccineName}</small>
-                )}
-              </span>
-              <span className={`pass-badge pass-badge--${item.status}`}>{BADGE_LABEL[item.status]}</span>
-            </div>
-            <div className="pass-item-dates">
-              {item.administeredAt || item.expiresAt
-                ? [
-                    item.administeredAt && `접종 ${formatDate(item.administeredAt)}`,
-                    item.expiresAt && `만료 ${formatDate(item.expiresAt)}`,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")
-                : "기록 없음"}
-            </div>
-            {item.hasProof && (
-              <div className="pass-proof">
-                <ClipIcon />
-                증빙 첨부
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+      {scope === "CARE" && guide && (
+        <>
+          <RowSection title="주의할 점" rows={[{ key: "cautions", value: guide.cautions, caution: true }]} />
+          <RowSection
+            title="돌봄 안내서"
+            rows={[
+              { label: "식사", value: guide.feeding },
+              { label: "약·영양제", value: guide.medication },
+              { label: "생활 습관", value: guide.habits },
+            ]}
+          />
+          <ContactSection contacts={guide.emergencyContacts ?? []} vetName={guide.vetName} vetPhone={guide.vetPhone} />
+        </>
+      )}
+
+      {scope === "GROOMING" && guide && (
+        <RowSection
+          title="미용 시 참고"
+          rows={[
+            { label: "피부·알러지·예민한 부위", value: guide.groomingNote },
+            { label: "주의할 점", value: guide.cautions, caution: true },
+          ]}
+        />
+      )}
+
+      {compact ? <VaccineRows items={items} /> : <VaccineCards items={items} />}
 
       <div className="pass-meta">
         <p>{formatKst(data.checkedAt)} 확인 · 발도장 앱 기록</p>
@@ -255,8 +304,151 @@ function PassContent({ data }: { data: VaccinePass }) {
           보호자가 발도장 앱에 기록한 정보로, 공식 접종증명서는 아니에요. 정확한 확인이 필요하면 동물병원 기록을 요청해
           주세요.
         </p>
-        <p>이 링크는 {formatKst(data.expiresAt)} 까지 유효해요</p>
+        <p>이 링크는 {formatKstUntil(data.expiresAt)} 까지 유효해요</p>
       </div>
     </>
+  );
+}
+
+interface Row {
+  /** 섹션 제목과 같으면 생략(key 로 대체). */
+  label?: string;
+  key?: string;
+  value: string | null | undefined;
+  caution?: boolean;
+}
+
+/** 값이 있는 행만 렌더, 전부 비면 섹션 자체를 생략. */
+function RowSection({ title, rows }: { title: string; rows: Row[] }) {
+  const visible = rows.filter((r) => has(r.value));
+  if (visible.length === 0) return null;
+  return (
+    <section className="pass-section">
+      <h2 className="pass-section-title">{title}</h2>
+      <div className="pass-rows">
+        {visible.map((r) => (
+          <div key={r.key ?? r.label} className={`pass-row${r.caution ? " pass-row--caution" : ""}`}>
+            {r.label && <div className="pass-row-label">{r.label}</div>}
+            <div className="pass-row-value">{r.value}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ContactSection({
+  contacts,
+  vetName,
+  vetPhone,
+}: {
+  contacts: EmergencyContact[];
+  vetName: string | null | undefined;
+  vetPhone: string | null | undefined;
+}) {
+  const people = contacts.filter((c) => has(c.name) || has(c.phone));
+  const hasVet = has(vetName) || has(vetPhone);
+  if (people.length === 0 && !hasVet) return null;
+  return (
+    <section className="pass-section">
+      <h2 className="pass-section-title">연락처</h2>
+      <div className="pass-rows">
+        {people.map((c, i) => (
+          <div key={i} className="pass-row pass-contact">
+            <div>
+              <div className="pass-row-label">비상 연락처</div>
+              <div className="pass-row-value">{has(c.name) ? c.name : c.phone}</div>
+              <div className="pass-contact-sub">{[c.relation, c.phone].filter(has).join(" · ")}</div>
+            </div>
+            {has(c.phone) && (
+              <a className="pass-call" href={telHref(c.phone)} aria-label={`${c.name ?? ""} 전화하기`}>
+                전화
+              </a>
+            )}
+          </div>
+        ))}
+        {hasVet && (
+          <div className="pass-row pass-contact">
+            <div>
+              <div className="pass-row-label">다니는 병원</div>
+              <div className="pass-row-value">{has(vetName) ? vetName : vetPhone}</div>
+              {has(vetName) && has(vetPhone) && <div className="pass-contact-sub">{vetPhone}</div>}
+            </div>
+            {has(vetPhone) && (
+              <a className="pass-call" href={telHref(vetPhone)} aria-label={`${vetName ?? "병원"} 전화하기`}>
+                전화
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function vaccineDates(item: VaccinePassItem): string {
+  return item.administeredAt || item.expiresAt
+    ? [item.administeredAt && `접종 ${formatDate(item.administeredAt)}`, item.expiresAt && `만료 ${formatDate(item.expiresAt)}`]
+        .filter(Boolean)
+        .join(" · ")
+    : "기록 없음";
+}
+
+function VaccineHead({ item }: { item: VaccinePassItem }) {
+  return (
+    <div className="pass-item-head">
+      <span className="pass-item-name">
+        {item.name}
+        {item.matchedVaccineName && item.matchedVaccineName !== item.name && (
+          <small className="pass-item-matched">{item.matchedVaccineName}</small>
+        )}
+      </span>
+      <span className={`pass-badge pass-badge--${item.status}`}>{BADGE_LABEL[item.status]}</span>
+    </div>
+  );
+}
+
+function VaccineBody({ item }: { item: VaccinePassItem }) {
+  return (
+    <>
+      <VaccineHead item={item} />
+      <div className="pass-item-dates">{vaccineDates(item)}</div>
+      {item.hasProof && (
+        <div className="pass-proof">
+          <ClipIcon />
+          증빙 첨부
+        </div>
+      )}
+    </>
+  );
+}
+
+/** 입장 확인: 기존 카드 적층. */
+function VaccineCards({ items }: { items: VaccinePassItem[] }) {
+  return (
+    <ul className="pass-list">
+      {items.map((item) => (
+        <li key={item.code} className="pass-item">
+          <VaccineBody item={item} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** 미용·돌봄: 한 컨테이너 안 행으로. */
+function VaccineRows({ items }: { items: VaccinePassItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <section className="pass-section">
+      <h2 className="pass-section-title">필수 접종</h2>
+      <ul className="pass-rows pass-list">
+        {items.map((item) => (
+          <li key={item.code} className="pass-row">
+            <VaccineBody item={item} />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

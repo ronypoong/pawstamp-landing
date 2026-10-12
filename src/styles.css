@@ -20,6 +20,8 @@
   --primary: #16a34a;
   --primary-dark: #15803d;
   --primary-soft: #dcfce7;
+  --terracotta-soft: #f7e6da;
+  --terracotta-ink: #a44e2b;
   /* 살구는 퀴즈·강조 전용. 작은 글씨는 --apricot-ink(대비 4.5:1) */
   --apricot: #e07a3f;
   --apricot-ink: #b8571f;
@@ -2006,6 +2008,33 @@ a:hover {
   color: var(--text-muted);
 }
 
+/* 펫 패스: 목적 줄 + compact 배너 (미용·돌봄) */
+.pass-scope {
+  margin: 0;
+  padding: 0 4px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.pass-status--compact {
+  padding: 14px 16px;
+}
+
+.pass-status--compact .pass-status-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.pass-status--compact .pass-status-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pass-status--compact .pass-status-title {
+  font-size: 18px;
+}
+
 .pass-pet {
   display: flex;
   gap: 12px;
@@ -2127,6 +2156,97 @@ a:hover {
   font-weight: 700;
   line-height: 1.4;
   color: var(--primary-dark);
+}
+
+/* 펫 패스 섹션 · 행 */
+.pass-section {
+  margin-top: 20px;
+}
+
+.pass-pet + .pass-section {
+  margin-top: 4px;
+}
+
+.pass-section-title {
+  margin: 0;
+  padding: 0 4px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted); /* --text-subtle 은 13px 대비 미달 */
+}
+
+.pass-rows {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.pass-row {
+  padding: 12px 14px;
+}
+
+.pass-row + .pass-row {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.pass-row-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pass-row-value {
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.pass-row-value:first-child {
+  margin-top: 0;
+}
+
+.pass-row--caution {
+  background: var(--terracotta-soft);
+}
+
+.pass-row--caution .pass-row-label {
+  color: var(--terracotta-ink);
+}
+
+.pass-contact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pass-contact > div {
+  min-width: 0;
+}
+
+.pass-contact-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.pass-call {
+  flex: none;
+  margin-left: auto;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 14px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .pass-meta {
