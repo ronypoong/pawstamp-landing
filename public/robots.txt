@@ -1,2 +1,23 @@
+# 발도장 랜딩. 검색엔진·AI 검색 크롤러 모두 허용한다(GEO).
+# /i/* 는 개인별 초대·펫 패스 링크라 색인하지 않는다.
 User-agent: *
 Allow: /
+Disallow: /i/
+
+# AI 검색·답변 엔진 (명시 허용)
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Yeti
+User-agent: Daum
+Allow: /
+Disallow: /i/
+
+Sitemap: https://pawstamp.rubi-on.com/sitemap.xml

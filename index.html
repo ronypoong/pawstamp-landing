@@ -3,12 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>발도장 — 반려동물 건강 기록 관리 앱</title>
-    <meta name="description" content="발도장은 반려동물 보호자가 예방접종, 진료, 알러지 검사 결과를 안전하게 보관하고 만료 예정일을 알림으로 받아볼 수 있는 모바일 앱입니다." />
-    <meta property="og:title" content="발도장 — 반려동물 건강 기록 관리 앱" />
-    <meta property="og:description" content="예방접종, 진료, 알러지 검사 결과를 한 곳에서 안전하게 관리하세요." />
+    <title>발도장 — 반려견 접종 확인 QR · 펫 패스, 강아지·고양이 기록 앱</title>
+    <meta name="description" content="발도장은 강아지·고양이 보호자를 위한 무료 앱입니다. 애견카페·미용실·유치원·호텔에서 펫 패스(접종 확인 QR)로 예방접종 현황을 바로 보여주고, 접종·진료 기록과 만료 알림, 매일의 발도장을 한 곳에서 관리하세요." />
+    <meta property="og:site_name" content="발도장" />
+    <meta property="og:title" content="발도장 — 접종 확인은 QR 하나로, 매일의 기록은 발도장으로" />
+    <meta property="og:description" content="애견카페·미용실·유치원·호텔에서 접종 확인은 펫 패스 QR 하나로. 강아지·고양이 보호자를 위한 무료 앱." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://pawstamp.rubi-on.com" />
+    <meta property="og:locale" content="ko_KR" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="발도장 AI용 요약" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://pawstamp.rubi-on.com/#website",
+          "url": "https://pawstamp.rubi-on.com/",
+          "name": "발도장",
+          "alternateName": "Pawstamp",
+          "inLanguage": "ko-KR"
+        },
+        {
+          "@type": "MobileApplication",
+          "@id": "https://pawstamp.rubi-on.com/#app",
+          "name": "발도장",
+          "alternateName": "Pawstamp",
+          "operatingSystem": "iOS, Android",
+          "applicationCategory": "LifestyleApplication",
+          "inLanguage": "ko-KR",
+          "description": "강아지·고양이 보호자를 위한 무료 앱. 펫 패스(접종 확인 QR)로 애견카페·미용실·유치원·호텔에서 예방접종 현황을 바로 보여주고, AI로 접종 증명서를 읽어 기록하며, 접종 만료 30일·7일 전과 당일에 알림을 보냅니다.",
+          "url": "https://pawstamp.rubi-on.com/",
+          "sameAs": [
+            "https://apps.apple.com/kr/app/pawstamp/id6778623989",
+            "https://play.google.com/store/apps/details?id=com.pawstamp.mobile"
+          ],
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+          "featureList": [
+            "펫 패스: 접종 확인 QR (입장 24시간 · 미용 당일 · 돌봄 1~30일)",
+            "AI 접종 증명서·검사지 자동 입력",
+            "예방접종 만료 알림 (30일 전 · 7일 전 · 당일)",
+            "돌봄 안내서 공유",
+            "매일의 발도장 기록",
+            "공동 보호자",
+            "커뮤니티 · 펫플레이스"
+          ]
+        }
+      ]
+    }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="theme-color" content="#16A34A" />
@@ -16,13 +59,17 @@
   <body>
     <div id="root"></div>
     <noscript>
-      <div style="padding:2rem 1.25rem;max-width:40rem;margin:0 auto;font-family:Arial,sans-serif;line-height:1.6;color:#0f172a">
-        <h1 style="font-size:1.5rem;font-weight:700">발도장</h1>
-        <p>발도장은 반려동물 보호자가 예방접종, 진료, 알러지 검사 결과를 안전하게 보관하고 만료 예정일을 알림으로 받아볼 수 있는 모바일 앱입니다.</p>
+      <div style="padding:2rem 1.25rem;max-width:40rem;margin:0 auto;font-family:Arial,sans-serif;line-height:1.6;color:#2e2823">
+        <h1 style="font-size:1.5rem;font-weight:700">발도장 — 접종 확인은 QR 하나로, 매일의 기록은 발도장으로</h1>
+        <p>발도장(Pawstamp)은 강아지·고양이 보호자를 위한 무료 앱입니다. 애견카페·미용실·유치원·호텔에 갈 때 펫 패스(접종 확인 QR)로 필수 예방접종 현황을 바로 보여줄 수 있고, 상대는 앱 설치 없이 웹에서 확인합니다.</p>
+        <p>접종 증명서를 사진으로 찍으면 AI가 읽어 기록하고, 접종 만료 30일 전·7일 전·당일에 알림을 보냅니다. 산책과 오늘의 한 줄은 매일의 발도장으로 쌓입니다.</p>
         <p>
-          <a href="/privacy" rel="noopener noreferrer">개인정보처리방침</a>
+          <a href="/guide">발도장 소개 · 자주 묻는 질문</a> ·
+          <a href="https://apps.apple.com/kr/app/pawstamp/id6778623989">App Store</a> ·
+          <a href="https://play.google.com/store/apps/details?id=com.pawstamp.mobile">Google Play</a> ·
+          <a href="/privacy">개인정보처리방침</a>
         </p>
-        <p style="font-size:0.875rem;color:#64748b">발도장 사이트를 사용하려면 자바스크립트를 활성화해주세요.</p>
+        <p style="font-size:0.875rem;color:#8b8079">발도장 사이트를 사용하려면 자바스크립트를 활성화해주세요.</p>
       </div>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
