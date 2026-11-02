@@ -1529,6 +1529,11 @@ a:hover {
   align-items: center;
 }
 
+.footer-business {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
 .footer-links {
   display: flex;
   flex-wrap: wrap;
