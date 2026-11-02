@@ -6,7 +6,7 @@
 - 소개·자주 묻는 질문: https://pawstamp.rubi-on.com/guide
 - App Store: https://apps.apple.com/kr/app/pawstamp/id6778623989
 - Google Play: https://play.google.com/store/apps/details?id=com.pawstamp.mobile
-- 문의: support@rubi-on.com
+- 문의: pawstamp@rubi-on.com
 - 언어/지역: 한국어, 대한민국
 
 ## 핵심 기능

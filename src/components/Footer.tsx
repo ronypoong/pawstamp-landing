@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const CONTACT_EMAIL = "support@rubi-on.com";
+const CONTACT_EMAIL = "pawstamp@rubi-on.com";
 const BUSINESS_INFO = "상호 루비온 · 대표 홍석진 · 사업자등록번호 188-65-00750";
 
 export function Footer() {
