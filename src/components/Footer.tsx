@@ -10,6 +10,11 @@ export function Footer() {
         <div className="footer-company">
           <div>© {new Date().getFullYear()} 발도장. All rights reserved.</div>
           <div className="footer-business">{BUSINESS_INFO}</div>
+          {/* 같은 회사 서비스라는 표시 — 루비온 홈으로 */}
+          <a className="footer-by" href="https://rubi-on.com">
+            <img src="/rubion-mark.png" width={16} height={16} alt="" />
+            by RUBI-ON
+          </a>
         </div>
         <div className="footer-links">
           <a href={`mailto:${CONTACT_EMAIL}`}>문의: {CONTACT_EMAIL}</a>
