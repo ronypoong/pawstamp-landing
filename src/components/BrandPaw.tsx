@@ -4,29 +4,22 @@ interface Props {
 }
 
 /**
- * 앱 런처 아이콘과 동일한 모양/색감의 발도장 브랜드 마크.
- * (흰색 라운드 사각 배경 + 짙은 차콜 paw — 실제 앱 아이콘과 통일.
- *  흰 헤더 위에서도 보이도록 옅은 테두리를 둔다.)
+ * 발도장 브랜드 마크 — 붉은 사각 인장(낙관)에 발바닥 음각. 앱 아이콘과 같은 모양(2026-11 리디자인 C안).
+ * 원본: pawstamp-fe/resources/brand/seal*.svg
  */
 export function BrandPaw({ className, size = 28 }: Props) {
   return (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      role="img"
-      aria-label="발도장"
-    >
-      <rect x="0.5" y="0.5" width="23" height="23" rx="5" fill="#FFFFFF" stroke="#E5E7EB" strokeWidth="1" />
-      <path
-        fill="#3F3F46"
-        d="M8.5 11.5c1.4 0 2.2 1.1 3.5 1.1s2.1-1.1 3.5-1.1c1.8 0 3.2 1.5 3.2 3.4 0 2.8-2.4 4.1-5.1 4.1h-3.2c-2.7 0-5.1-1.3-5.1-4.1 0-1.9 1.4-3.4 3.2-3.4Z"
-      />
-      <circle fill="#3F3F46" cx="6.7" cy="8.2" r="1.9" />
-      <circle fill="#3F3F46" cx="10.3" cy="5.7" r="1.9" />
-      <circle fill="#3F3F46" cx="13.7" cy="5.7" r="1.9" />
-      <circle fill="#3F3F46" cx="17.3" cy="8.2" r="1.9" />
+    <svg className={className} width={size} height={size} viewBox="18 18 64 64" role="img" aria-label="발도장">
+      <g transform="rotate(3 50 50)">
+        <rect x="20" y="20" width="60" height="60" rx="9" fill="#c4563c" />
+        <g fill="#fbf6ee" transform="translate(50 54.2) scale(0.465)">
+          <ellipse cx="-27" cy="-14" rx="9" ry="12" transform="rotate(-24 -27 -14)" />
+          <ellipse cx="-10" cy="-33" rx="10" ry="13" transform="rotate(-8 -10 -33)" />
+          <ellipse cx="10" cy="-33" rx="10" ry="13" transform="rotate(8 10 -33)" />
+          <ellipse cx="27" cy="-14" rx="9" ry="12" transform="rotate(24 27 -14)" />
+          <path d="M0-8C13-8 29 8 29 19C29 29 21 33 12 31C6 30 3 28 0 28C-3 28-6 30-12 31C-21 33-29 29-29 19C-29 8-13-8 0-8Z" />
+        </g>
+      </g>
     </svg>
   );
 }
