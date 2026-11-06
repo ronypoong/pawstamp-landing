@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   fetchCheckins,
+  fetchVenueProfile,
   fetchVenueStats,
   kstDate,
   type Checkin,
@@ -72,6 +73,7 @@ export function PartnerDashboardPage() {
           이 매장은 체크인 받기가 꺼져 있어요. <Link to="/partner/me">내 정보</Link>에서 다시 켤 수 있어요.
         </p>
       )}
+      <ProfileNudge venueId={venue.id} />
       <TodayCheckins venueId={venue.id} />
       <StatsSection venueId={venue.id} linked={venue.petCafeId != null} />
       <p className="p-legal">
@@ -79,6 +81,41 @@ export function PartnerDashboardPage() {
         도구로 써 주세요.
       </p>
     </div>
+  );
+}
+
+// ─── 매장 꾸미기 넛지: 사진·한 줄 소개가 모두 비었을 때만 ─────
+function ProfileNudge({ venueId }: { venueId: number }) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setShow(false);
+    fetchVenueProfile(venueId)
+      .then((p) => {
+        if (!alive) return;
+        const empty = p.photos.length === 0 && !p.tagline?.trim() && !p.description?.trim();
+        setShow(empty);
+      })
+      .catch(() => {
+        // 넛지는 부가 정보 — 실패해도 조용히 숨긴다(인증 만료는 다른 요청이 처리).
+      });
+    return () => {
+      alive = false;
+    };
+  }, [venueId]);
+
+  if (!show) return null;
+  return (
+    <section className="p-card p-nudge">
+      <div className="p-nudge-text">
+        <p className="p-nudge-title">매장을 꾸미면 발도장 앱에 사진과 함께 소개돼요</p>
+        <p className="p-nudge-body">대표 사진과 한 줄 소개만 넣어도 나들이 목록에서 훨씬 눈에 띄어요.</p>
+      </div>
+      <Link className="p-btn p-btn--primary p-btn--sm" to="/partner/profile">
+        매장 꾸미기
+      </Link>
+    </section>
   );
 }
 

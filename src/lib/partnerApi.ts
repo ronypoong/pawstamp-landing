@@ -221,6 +221,154 @@ export async function fetchVenueStats(venueId: number, from: string, to: string)
   };
 }
 
+// ─── 매장 꾸미기(프로필) — 2단계 계약 ─────────
+export type HoursDay = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN" | "HOLIDAY";
+
+export interface HoursEntry {
+  day: HoursDay;
+  open: string; // "10:00"
+  close: string; // "21:00"
+  closed: boolean;
+}
+
+export interface VenuePhoto {
+  id: number;
+  url: string;
+  thumbnailUrl: string | null;
+  order: number;
+  /** 운영자가 숨긴 사진 */
+  hidden: boolean;
+}
+
+export interface VenueProfileInput {
+  tagline: string | null;
+  description: string | null;
+  hours: HoursEntry[];
+  hoursNote: string | null;
+  phone: string | null;
+  instagramUrl: string | null;
+  websiteUrl: string | null;
+  tags: { preset: string[]; custom: string[] };
+}
+
+export interface VenueProfile extends VenueProfileInput {
+  photos: VenuePhoto[];
+  hiddenByAdmin: boolean;
+  hiddenReason: string | null;
+}
+
+export interface TagDef {
+  code: string;
+  label: string;
+}
+
+/** 서버 목록을 못 받을 때의 폴백(계약서와 동일). */
+export const DEFAULT_TAGS: TagDef[] = [
+  { code: "LARGE_DOG", label: "대형견 가능" },
+  { code: "SMALL_DOG_ONLY", label: "소형견 전용" },
+  { code: "INDOOR", label: "실내" },
+  { code: "OUTDOOR", label: "야외" },
+  { code: "PARKING", label: "주차 가능" },
+  { code: "OFF_LEASH", label: "오프리쉬" },
+  { code: "POOL", label: "수영장" },
+  { code: "DOG_MENU", label: "강아지 메뉴" },
+  { code: "ROOFTOP", label: "루프탑" },
+  { code: "NO_KIDS", label: "노키즈" },
+  { code: "PHOTO_SPOT", label: "포토 스팟" },
+  { code: "QUIET", label: "조용한" },
+  { code: "GROOMING", label: "미용" },
+  { code: "HOTEL", label: "호텔" },
+  { code: "DAYCARE", label: "유치원" },
+  { code: "NEAR_PARK", label: "공원 근처" },
+];
+
+export const PHOTO_LIMIT = 10;
+
+function normProfile(p: Partial<VenueProfile> | null | undefined): VenueProfile {
+  return {
+    tagline: p?.tagline ?? null,
+    description: p?.description ?? null,
+    hours: p?.hours ?? [],
+    hoursNote: p?.hoursNote ?? null,
+    phone: p?.phone ?? null,
+    instagramUrl: p?.instagramUrl ?? null,
+    websiteUrl: p?.websiteUrl ?? null,
+    tags: { preset: p?.tags?.preset ?? [], custom: p?.tags?.custom ?? [] },
+    photos: [...(p?.photos ?? [])].sort((a, b) => a.order - b.order),
+    hiddenByAdmin: !!p?.hiddenByAdmin,
+    hiddenReason: p?.hiddenReason ?? null,
+  };
+}
+
+export async function fetchVenueProfile(venueId: number): Promise<VenueProfile> {
+  return normProfile(await request<VenueProfile>(`/partner/venues/${venueId}/profile`));
+}
+
+export async function saveVenueProfile(venueId: number, input: VenueProfileInput): Promise<VenueProfile> {
+  return normProfile(
+    await request<VenueProfile>(`/partner/venues/${venueId}/profile`, { method: "PUT", body: JSON.stringify(input) }),
+  );
+}
+
+export async function fetchPartnerTags(): Promise<TagDef[]> {
+  try {
+    const list = await request<TagDef[]>("/partner/tags");
+    return list?.length ? list : DEFAULT_TAGS;
+  } catch (e) {
+    if (e instanceof PartnerAuthError) throw e;
+    return DEFAULT_TAGS;
+  }
+}
+
+export function deleteVenuePhoto(venueId: number, photoId: number): Promise<void> {
+  return request<void>(`/partner/venues/${venueId}/photos/${photoId}`, { method: "DELETE" });
+}
+
+export function reorderVenuePhotos(venueId: number, photoIds: number[]): Promise<void> {
+  return request<void>(`/partner/venues/${venueId}/photos/order`, { method: "PUT", body: JSON.stringify({ photoIds }) });
+}
+
+/** 사진 업로드(multipart `file`). 진행률 콜백을 위해 XHR 사용. */
+export function uploadVenuePhoto(venueId: number, file: Blob, fileName: string, onProgress: (ratio: number) => void): Promise<VenuePhoto> {
+  if (import.meta.env.DEV && isMockMode()) return mockUpload(file, onProgress);
+  return new Promise((resolve, reject) => {
+    const token = getPartnerToken();
+    if (!token) {
+      reject(new PartnerAuthError());
+      return;
+    }
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API_BASE_URL}/partner/venues/${venueId}/photos`);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(e.loaded / e.total);
+    };
+    xhr.onerror = () => reject(new PartnerApiError(0, "네트워크 연결을 확인해 주세요."));
+    xhr.onload = () => {
+      if (xhr.status === 401) {
+        setPartnerToken(null);
+        reject(new PartnerAuthError());
+        return;
+      }
+      let body: { data?: VenuePhoto; error?: { message?: string; code?: string } } | null = null;
+      try {
+        body = JSON.parse(xhr.responseText);
+      } catch {
+        // 본문 없음
+      }
+      if (xhr.status < 200 || xhr.status >= 300 || !body?.data) {
+        reject(new PartnerApiError(xhr.status, body?.error?.message || "사진을 올리지 못했어요.", body?.error?.code));
+        return;
+      }
+      resolve(body.data);
+    };
+    const form = new FormData();
+    form.append("file", file, fileName);
+    xhr.send(form);
+  });
+}
+
 // ─── 날짜 유틸(KST) ──────────────────────────
 /** KST 기준 YYYY-MM-DD. offsetDays 만큼 이동. */
 export function kstDate(offsetDays = 0): string {
@@ -286,6 +434,43 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
       ],
     })) as T;
   }
+  if (path.endsWith("/profile")) {
+    if (method === "PUT") {
+      mockProfile = { ...mockProfile, ...(JSON.parse(String(init.body)) as VenueProfileInput) };
+    }
+    if (kind === "full" && !mockSeeded) {
+      mockSeeded = true;
+      mockProfile = normProfile({
+        tagline: "대형견도 뛰어노는 성수 루프탑 애견카페",
+        description: "300평 실내 놀이터와 루프탑 운동장이 있어요.\n강아지 전용 메뉴(멍푸치노·수제 간식)도 준비돼 있어요.",
+        hours: (["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN", "HOLIDAY"] as HoursDay[]).map((day) => ({
+          day,
+          open: "11:00",
+          close: day === "SAT" || day === "SUN" ? "22:00" : "21:00",
+          closed: day === "MON",
+        })),
+        hoursNote: "라스트오더 20:30",
+        phone: "02-123-4567",
+        instagramUrl: "https://instagram.com/mungmung_play",
+        websiteUrl: null,
+        tags: { preset: ["LARGE_DOG", "ROOFTOP", "DOG_MENU", "PARKING"], custom: ["생일파티"] },
+        photos: ["joint", "nosework", "vitality"].map((n, i) => ({ id: i + 1, url: `/ads/${n}.svg`, thumbnailUrl: `/ads/${n}.svg`, order: i, hidden: i === 2 })),
+      });
+    }
+    if (kind === "hidden") return { ...mockProfile, hiddenByAdmin: true, hiddenReason: "대표 사진이 매장과 관련 없는 이미지예요." } as T;
+    return mockProfile as T;
+  }
+  if (path === "/partner/tags") return DEFAULT_TAGS as T;
+  if (path.includes("/photos/order")) {
+    const ids = (JSON.parse(String(init.body)) as { photoIds: number[] }).photoIds;
+    mockProfile.photos = ids.map((id, order) => ({ ...mockProfile.photos.find((p) => p.id === id)!, order }));
+    return undefined as T;
+  }
+  if (path.includes("/photos/") && method === "DELETE") {
+    const id = Number(path.split("/").pop());
+    mockProfile.photos = mockProfile.photos.filter((p) => p.id !== id);
+    return undefined as T;
+  }
   if (path.includes("/stats")) {
     const empty = kind === "empty";
     const n = (v: number) => (empty ? 0 : v);
@@ -311,4 +496,20 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
     } as T;
   }
   return undefined as T;
+}
+
+let mockProfile: VenueProfile = normProfile(null);
+let mockPhotoSeq = 100;
+let mockSeeded = false;
+
+async function mockUpload(file: Blob, onProgress: (r: number) => void): Promise<VenuePhoto> {
+  for (let i = 1; i <= 5; i++) {
+    await new Promise((r) => setTimeout(r, 150));
+    onProgress(i / 5);
+  }
+  if (window.sessionStorage.getItem("partnerMock") === "uploadfail") throw new PartnerApiError(500, "사진을 올리지 못했어요.");
+  const url = URL.createObjectURL(file);
+  const photo: VenuePhoto = { id: ++mockPhotoSeq, url, thumbnailUrl: url, order: mockProfile.photos.length, hidden: false };
+  mockProfile.photos = [...mockProfile.photos, photo];
+  return photo;
 }

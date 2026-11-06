@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { BrandPaw } from "../../components/BrandPaw";
 import {
@@ -23,7 +23,13 @@ interface PartnerContextValue {
   logout: () => void;
   /** API 에러 공통 처리: 인증 만료면 로그인으로 보낸다. 처리했으면 true. */
   handleAuthError: (e: unknown) => boolean;
+  /** 저장 안 한 변경이 있는 화면이 등록. 탭·매장 이동 전에 확인창을 띄운다. */
+  setDirty: (dirty: boolean) => void;
+  /** 이동해도 되면 true(변경 없음 또는 사용자가 확인). */
+  confirmLeave: () => boolean;
 }
+
+const LEAVE_MESSAGE = "저장하지 않은 내용이 있어요. 이동하면 사라져요. 이동할까요?";
 
 const PartnerContext = createContext<PartnerContextValue | null>(null);
 
@@ -51,7 +57,7 @@ function writeSelected(id: number) {
 }
 
 /** 로그인/비로그인 공통 껍데기: 얇은 헤더(인장 + 발도장 파트너) + 본문. 인쇄 시 헤더는 숨는다. */
-export function PartnerShell({ children, right }: { children: ReactNode; right?: ReactNode }) {
+export function PartnerShell({ children, right, onBrandClick }: { children: ReactNode; right?: ReactNode; onBrandClick?: (e: MouseEvent) => void }) {
   useEffect(() => {
     const robots = document.createElement("meta");
     robots.name = "robots";
@@ -64,7 +70,7 @@ export function PartnerShell({ children, right }: { children: ReactNode; right?:
     <div className="p-app">
       <header className="p-header">
         <div className="p-header-row">
-          <Link className="p-brand" to="/partner" aria-label="발도장 파트너 소개">
+          <Link className="p-brand" to="/partner" aria-label="발도장 파트너 소개" onClick={onBrandClick}>
             <BrandPaw size={26} />
             <span>발도장</span>
             <span className="p-brand-tag">파트너</span>
@@ -85,6 +91,18 @@ export function PartnerLayout() {
   const location = useLocation();
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   const [selectedId, setSelectedId] = useState<number | null>(readSelected);
+  const dirtyRef = useRef(false);
+
+  // 새로고침·창 닫기 이탈 경고
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
 
   const goLogin = useCallback(() => {
     const next = location.pathname + location.search;
@@ -153,6 +171,15 @@ export function PartnerLayout() {
         navigate("/partner", { replace: true });
       },
       handleAuthError,
+      setDirty: (d) => {
+        dirtyRef.current = d;
+      },
+      confirmLeave: () => {
+        if (!dirtyRef.current) return true;
+        if (!window.confirm(LEAVE_MESSAGE)) return false;
+        dirtyRef.current = false;
+        return true;
+      },
     };
   }, [ready, selectedId, navigate, handleAuthError]);
 
@@ -181,22 +208,27 @@ export function PartnerLayout() {
   }
 
   const hasVenue = value.venues.length > 0;
+  const guard = (e: MouseEvent) => {
+    if (!value.confirmLeave()) e.preventDefault();
+  };
+  const tabs = [
+    { to: "/partner/dashboard", label: "방문 현황" },
+    { to: "/partner/profile", label: "매장 꾸미기" },
+    { to: "/partner/poster", label: "QR 포스터" },
+    { to: "/partner/me", label: "내 정보" },
+  ];
 
   return (
     <PartnerContext.Provider value={value}>
-      <PartnerShell right={hasVenue ? <VenueSwitcher /> : undefined}>
+      <PartnerShell right={hasVenue ? <VenueSwitcher /> : undefined} onBrandClick={guard}>
         {hasVenue && (
           <nav className="p-tabs" aria-label="파트너 메뉴">
             <div className="p-tabs-row">
-              <NavLink to="/partner/dashboard" className={({ isActive }) => `p-tab${isActive ? " active" : ""}`}>
-                방문 현황
-              </NavLink>
-              <NavLink to="/partner/poster" className={({ isActive }) => `p-tab${isActive ? " active" : ""}`}>
-                QR 포스터
-              </NavLink>
-              <NavLink to="/partner/me" className={({ isActive }) => `p-tab${isActive ? " active" : ""}`}>
-                내 정보
-              </NavLink>
+              {tabs.map((t) => (
+                <NavLink key={t.to} to={t.to} onClick={guard} className={({ isActive }) => `p-tab${isActive ? " active" : ""}`}>
+                  {t.label}
+                </NavLink>
+              ))}
             </div>
           </nav>
         )}
@@ -209,7 +241,7 @@ export function PartnerLayout() {
 }
 
 function VenueSwitcher() {
-  const { venues, venue, selectVenue } = usePartner();
+  const { venues, venue, selectVenue, confirmLeave } = usePartner();
   const navigate = useNavigate();
   if (!venue) return null;
   return (
@@ -218,6 +250,7 @@ function VenueSwitcher() {
       <select
         value={venue.id}
         onChange={(e) => {
+          if (!confirmLeave()) return;
           if (e.target.value === "new") navigate("/partner/venues/new");
           else selectVenue(Number(e.target.value));
         }}
