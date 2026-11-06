@@ -13,6 +13,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: "성격테스트", to: "/quiz", exact: true },
   { label: "공지사항", to: "/notice" },
   { label: "문의", to: "/feedback", exact: true },
+  // 업체용 파트너 포털 진입(작게). 사장님이 랜딩에 들어왔을 때 찾을 수 있도록.
+  { label: "사장님", to: "/partner" },
 ];
 
 export function Header() {
