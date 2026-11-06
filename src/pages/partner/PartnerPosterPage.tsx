@@ -110,16 +110,16 @@ export function PartnerPosterPage() {
             </header>
             <p className="poster-venue">{venue.name}</p>
             <h2 className="poster-headline">
-              발도장 앱으로 찍고
+              휴대폰 카메라로 찍고
               <br />
-              <em>입장 도장</em> 받기
+              <em>방문 도장</em> 받기
             </h2>
             <div className="poster-qr">
               <QrCode value={venue.checkinUrl} size="100%" label={`${venue.name} 체크인 QR`} />
             </div>
             <ol className="poster-steps">
               <li>
-                <b>1</b>QR 찍기
+                <b>1</b>카메라로 찍기
               </li>
               <li>
                 <b>2</b>반려견 고르기
@@ -128,7 +128,7 @@ export function PartnerPosterPage() {
                 <b>3</b>도장 받기
               </li>
             </ol>
-            <p className="poster-sub">앱이 없으면 휴대폰 카메라로 찍어도 설치 안내가 나와요.</p>
+            <p className="poster-sub">앱이 없어도 괜찮아요. 찍으면 설치 안내가 나와요.</p>
             <p className="poster-legal">
               펫 패스는 보호자가 앱에 기록한 접종 정보를 보여주는 확인 보조 도구예요. 공식 증명서를 대신하지 않아요.
             </p>

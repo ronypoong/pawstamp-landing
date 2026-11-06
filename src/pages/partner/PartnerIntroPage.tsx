@@ -5,7 +5,7 @@ import { getPartnerToken } from "../../lib/partnerApi";
 
 const VALUES = [
   {
-    title: "QR 한 장 붙이면 접종 확인이 끝나요",
+    title: "QR 한 장이면 접종 기록이 한눈에",
     body: "손님이 입구 QR을 찍으면 반려견 이름·사진과 필수 접종 날짜·상태가 사장님 화면에 바로 떠요. 수첩을 한 장씩 넘겨 보지 않아도 돼요.",
   },
   {
@@ -59,7 +59,7 @@ export function PartnerIntroPage() {
             <h1 className="pi-title">
               QR 한 장 붙이면
               <br />
-              손님 반려견 <span className="pi-accent">접종 확인</span>이 끝나요
+              손님 반려견 <span className="pi-accent">접종 기록</span>이 바로 보여요
             </h1>
             <p className="pi-lead">
               손님이 발도장 앱으로 입구 QR을 찍으면, 반려견 펫 패스가 사장님 화면에 바로 도착해요. 방문 기록과 단골 현황은 저절로
