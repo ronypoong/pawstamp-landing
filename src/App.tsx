@@ -18,6 +18,7 @@ import { PartnerVenueNewPage } from "./pages/partner/PartnerVenueNewPage";
 import { PartnerPosterPage } from "./pages/partner/PartnerPosterPage";
 import { PartnerMePage } from "./pages/partner/PartnerMePage";
 import { PartnerProfilePage } from "./pages/partner/PartnerProfilePage";
+import { PartnerVerifyPage } from "./pages/partner/PartnerVerifyPage";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
       <Route element={<PartnerLayout />}>
         <Route path="/partner/dashboard" element={<PartnerDashboardPage />} />
         <Route path="/partner/venues/new" element={<PartnerVenueNewPage />} />
+        <Route path="/partner/verify" element={<PartnerVerifyPage />} />
         <Route path="/partner/profile" element={<PartnerProfilePage />} />
         <Route path="/partner/poster" element={<PartnerPosterPage />} />
         <Route path="/partner/me" element={<PartnerMePage />} />

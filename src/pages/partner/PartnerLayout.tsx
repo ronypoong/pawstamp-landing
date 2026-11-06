@@ -7,6 +7,7 @@ import {
   fetchVenues,
   getPartnerToken,
   setPartnerToken,
+  verificationStep,
   type PartnerProfile,
   type Venue,
 } from "../../lib/partnerApi";
@@ -233,6 +234,7 @@ export function PartnerLayout() {
           </nav>
         )}
         <main className="p-main">
+          {hasVenue && !["/partner/verify", "/partner/venues/new", "/partner/me"].includes(location.pathname) && <VerificationBanner />}
           <Outlet />
         </main>
       </PartnerShell>
@@ -240,11 +242,55 @@ export function PartnerLayout() {
   );
 }
 
+/** 인증 전·반려 매장 상단 안내. 인증 매장은 표시 없음(헤더의 '인증 매장' 칩으로 충분). */
+function VerificationBanner() {
+  const { venue } = usePartner();
+  if (!venue) return null;
+  const step = verificationStep(venue);
+  if (step === "verified") return null;
+  if (step === "rejected") {
+    return (
+      <div className="p-banner vf-banner" role="status">
+        <div>
+          <span className="vf-badge vf-badge--danger">다시 제출 필요</span>{" "}
+          <b>사업자 인증에서 한 가지만 고쳐 주세요.</b>
+          {venue.verificationRejectReason && <div className="vf-banner-reason">{venue.verificationRejectReason}</div>}
+        </div>
+        <Link className="p-btn p-btn--primary" to="/partner/verify">
+          다시 제출
+        </Link>
+      </div>
+    );
+  }
+  return (
+    <div className="p-banner vf-banner" role="status">
+      <div>
+        <b>{step === "pending" ? "운영팀이 사업자 인증을 확인하고 있어요(보통 1영업일)." : "사업자 인증을 마쳐 주세요."}</b>{" "}
+        인증이 끝나면 발도장 앱에 공개되고 체크인을 받을 수 있어요.
+        {step === "pending" && (
+          <>
+            {" "}
+            그동안 <Link to="/partner/profile">매장 꾸미기</Link>를 해 두세요.
+          </>
+        )}
+      </div>
+      {step === "unsubmitted" && (
+        <Link className="p-btn p-btn--primary" to="/partner/verify">
+          인증하기
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function VenueSwitcher() {
   const { venues, venue, selectVenue, confirmLeave } = usePartner();
   const navigate = useNavigate();
   if (!venue) return null;
+  const verified = verificationStep(venue) === "verified";
   return (
+    <div className="p-venue-switch-wrap">
+    {verified && <span className="vf-badge vf-badge--ok vf-badge--header">인증 매장</span>}
     <label className="p-venue-switch">
       <span className="sr-only">매장 선택</span>
       <select
@@ -264,5 +310,6 @@ function VenueSwitcher() {
         <option value="new">+ 매장 추가</option>
       </select>
     </label>
+    </div>
   );
 }

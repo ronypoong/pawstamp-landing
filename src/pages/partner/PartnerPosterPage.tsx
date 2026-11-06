@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BrandPaw } from "../../components/BrandPaw";
 import { QrCode } from "../../components/QrCode";
+import { verificationStep } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
 
 type PaperSize = "A4" | "A5";
@@ -29,6 +30,7 @@ export function PartnerPosterPage() {
   }, [size]);
 
   if (!venue) return null;
+  const verified = verificationStep(venue) === "verified";
 
   async function copyLink() {
     if (!venue) return;
@@ -83,6 +85,11 @@ export function PartnerPosterPage() {
           </button>
           <p className="p-hint">인쇄 창에서 'PDF로 저장'을 고르면 파일로 받아 인쇄소에 맡길 수도 있어요.</p>
 
+          {!verified && (
+            <p className="p-hint vf-poster-note">
+              사업자 인증이 끝나기 전 포스터에는 '인증 후 인쇄해 주세요' 표시가 들어가요. 인증이 끝나면 표시 없이 인쇄할 수 있어요.
+            </p>
+          )}
           {!venue.active && (
             <p className="p-error">이 매장은 체크인 받기가 꺼져 있어요. 내 정보에서 다시 켤 수 있어요.</p>
           )}
@@ -102,7 +109,12 @@ export function PartnerPosterPage() {
         </aside>
 
         <div className="poster-preview">
-          <article className={`poster-sheet poster-sheet--${size.toLowerCase()}`} aria-label={`${size} 포스터 미리보기`}>
+          <article className={`poster-sheet poster-sheet--${size.toLowerCase()}${verified ? "" : " is-unverified"}`} aria-label={`${size} 포스터 미리보기`}>
+            {!verified && (
+              <div className="poster-watermark" aria-label="인증 후 인쇄해 주세요">
+                <span>인증 후 인쇄해 주세요</span>
+              </div>
+            )}
             <div className="poster-inner">
             <header className="poster-top">
               <BrandPaw size={40} className="poster-seal" />

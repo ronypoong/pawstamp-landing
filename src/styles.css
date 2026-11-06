@@ -2441,8 +2441,12 @@ a:hover {
   text-decoration: none;
 }
 .p-link--center {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
   margin: 8px auto 0;
+  text-align: center;
 }
 
 /* 껍데기 */
@@ -4593,4 +4597,231 @@ a:hover {
   .pf-time {
     min-width: 0;
   }
+}
+
+/* ─── 사업자 인증 ───────────────────────────── */
+.p-banner--danger {
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+}
+.vf-banner {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.vf-banner > div {
+  flex: 1 1 240px;
+}
+.vf-banner .p-btn {
+  flex: none;
+}
+.vf-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.vf-badge:hover {
+  text-decoration: none;
+}
+.vf-badge--ok {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+.vf-badge--danger {
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+}
+.p-venue-switch-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+@media (max-width: 480px) {
+  .vf-badge--header {
+    display: none;
+  }
+}
+.vf-state {
+  text-align: center;
+}
+.vf-state-title {
+  margin: 10px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+.vf-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.vf-bizno {
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.vf-err {
+  display: block;
+  margin: 6px 0 0;
+}
+.vf-drop {
+  width: 100%;
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  border: 1.5px dashed var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+}
+.vf-drop > svg {
+  color: var(--text-muted);
+}
+.vf-rejected {
+  display: block;
+}
+.vf-rejected p {
+  margin: 0;
+}
+.vf-rejected-title {
+  margin-top: 8px !important;
+  font-size: 16px;
+  font-weight: 800;
+}
+.vf-rejected-reason {
+  margin-top: 4px !important;
+  font-weight: 700;
+  color: var(--text);
+}
+.vf-rejected-body {
+  margin-top: 4px !important;
+  color: var(--text-muted);
+}
+.vf-banner-reason {
+  margin-top: 2px;
+  font-weight: 600;
+}
+.vf-banner a:not(.p-btn) {
+  color: inherit;
+  text-decoration: underline;
+}
+.vf-badge--link {
+  position: relative;
+}
+.vf-badge--link::before {
+  content: "";
+  position: absolute;
+  inset: -10px -4px;
+}
+.vf-drop small {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  word-break: keep-all;
+}
+.vf-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.vf-file img,
+.vf-file-icon {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--surface-alt);
+}
+.vf-file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+.vf-file-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vf-poster-note {
+  margin-top: 0;
+}
+
+/* 소유 이의 제기 */
+.cd-open {
+  display: block;
+  min-height: 44px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+.cd-box {
+  margin: 6px 0 4px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--surface-alt);
+}
+.cd-textarea {
+  min-height: 88px;
+}
+.cd-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.cd-done {
+  margin: 6px 14px;
+  font-size: 13px;
+}
+
+/* 인증 전 포스터 워터마크(화면·인쇄 모두) */
+.poster-sheet {
+  position: relative;
+}
+.poster-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+.poster-watermark span {
+  transform: rotate(-24deg);
+  padding: 2cqw 5cqw;
+  border: 0.5cqw dashed rgba(46, 40, 35, 0.45);
+  border-radius: 2cqw;
+  background: rgba(255, 255, 255, 0.85);
+  color: rgba(46, 40, 35, 0.6);
+  font-size: 6cqw;
+  font-weight: 900;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
 }

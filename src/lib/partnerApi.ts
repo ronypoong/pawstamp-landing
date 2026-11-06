@@ -40,6 +40,34 @@ export interface Venue {
   petCafeId: number | null;
   active: boolean;
   createdAt: string;
+  /** 매장(사업자) 인증. 구 응답엔 없을 수 있음. */
+  verificationStatus?: VerificationStatus | null;
+  /** 인증 서류 제출 시각. PENDING 인데 null 이면 아직 제출 전. */
+  verificationSubmittedAt?: string | null;
+  /** REJECTED 사유 */
+  verificationRejectReason?: string | null;
+}
+
+export type VerificationStatus = "PENDING" | "VERIFIED" | "REJECTED";
+
+/** 화면용 인증 단계: 제출 전 / 운영팀 확인 중 / 인증 완료 / 반려. */
+export type VerificationStep = "unsubmitted" | "pending" | "verified" | "rejected";
+
+export function verificationStep(v: Venue): VerificationStep {
+  if (v.verificationStatus === "VERIFIED") return "verified";
+  if (v.verificationStatus === "REJECTED") return "rejected";
+  if (v.verificationStatus === "PENDING" && v.verificationSubmittedAt) return "pending";
+  return "unsubmitted";
+}
+
+export interface VerificationInput {
+  /** 숫자 10자리(하이픈 제외) */
+  bizNo: string;
+  ownerName: string;
+  /** YYYYMMDD */
+  openDate: string;
+  file: Blob;
+  fileName: string;
 }
 
 export type CreateVenueInput =
@@ -331,6 +359,35 @@ export function reorderVenuePhotos(venueId: number, photoIds: number[]): Promise
 /** 사진 업로드(multipart `file`). 진행률 콜백을 위해 XHR 사용. */
 export function uploadVenuePhoto(venueId: number, file: Blob, fileName: string, onProgress: (ratio: number) => void): Promise<VenuePhoto> {
   if (import.meta.env.DEV && isMockMode()) return mockUpload(file, onProgress);
+  const form = new FormData();
+  form.append("file", file, fileName);
+  return postMultipart<VenuePhoto>(`/partner/venues/${venueId}/photos`, form, onProgress, "사진을 올리지 못했어요.", true);
+}
+
+/** 사업자 인증 서류 제출(multipart bizNo, ownerName, openDate, file). */
+export async function submitVerification(venueId: number, input: VerificationInput, onProgress: (r: number) => void): Promise<void> {
+  if (import.meta.env.DEV && isMockMode()) {
+    for (let i = 1; i <= 4; i++) {
+      await new Promise((res) => setTimeout(res, 150));
+      onProgress(i / 4);
+    }
+    mockVerification = { status: "PENDING", submittedAt: new Date().toISOString(), reason: null };
+    return;
+  }
+  const form = new FormData();
+  form.append("bizNo", input.bizNo);
+  form.append("ownerName", input.ownerName);
+  form.append("openDate", input.openDate);
+  form.append("file", input.file, input.fileName);
+  await postMultipart<unknown>(`/partner/venues/${venueId}/verification`, form, onProgress, "제출하지 못했어요. 잠시 후 다시 시도해 주세요.", false);
+}
+
+/** 이미 다른 파트너가 연결한 장소에 대한 소유 이의 제기. */
+export function submitClaimDispute(petCafeId: number, message: string): Promise<void> {
+  return request<void>(`/partner/places/${petCafeId}/claim-dispute`, { method: "POST", body: JSON.stringify({ message }) });
+}
+
+function postMultipart<T>(path: string, form: FormData, onProgress: (r: number) => void, fallback: string, requireData: boolean): Promise<T> {
   return new Promise((resolve, reject) => {
     const token = getPartnerToken();
     if (!token) {
@@ -338,7 +395,7 @@ export function uploadVenuePhoto(venueId: number, file: Blob, fileName: string, 
       return;
     }
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${API_BASE_URL}/partner/venues/${venueId}/photos`);
+    xhr.open("POST", `${API_BASE_URL}${path}`);
     xhr.setRequestHeader("Authorization", `Bearer ${token}`);
     xhr.setRequestHeader("Accept", "application/json");
     xhr.upload.onprogress = (e) => {
@@ -351,20 +408,18 @@ export function uploadVenuePhoto(venueId: number, file: Blob, fileName: string, 
         reject(new PartnerAuthError());
         return;
       }
-      let body: { data?: VenuePhoto; error?: { message?: string; code?: string } } | null = null;
+      let body: { data?: T; error?: { message?: string; code?: string } } | null = null;
       try {
         body = JSON.parse(xhr.responseText);
       } catch {
         // 본문 없음
       }
-      if (xhr.status < 200 || xhr.status >= 300 || !body?.data) {
-        reject(new PartnerApiError(xhr.status, body?.error?.message || "사진을 올리지 못했어요.", body?.error?.code));
+      if (xhr.status < 200 || xhr.status >= 300 || (requireData && !body?.data)) {
+        reject(new PartnerApiError(xhr.status, body?.error?.message || fallback, body?.error?.code));
         return;
       }
-      resolve(body.data);
+      resolve(body?.data as T);
     };
-    const form = new FormData();
-    form.append("file", file, fileName);
     xhr.send(form);
   });
 }
@@ -400,6 +455,7 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
     petCafeId: kind === "nolink" ? null : 10,
     active: true,
     createdAt: "2026-11-01T00:00:00Z",
+    ...mockVenueVerification(kind),
   };
   const method = init.method ?? "GET";
   if (path.startsWith("/partner/auth/email/verify")) {
@@ -413,7 +469,11 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
       { petCafeId: 11, name: "멍멍 플레이그라운드 홍대점", address: "서울 마포구 와우산로 00", category: "애견카페", claimed: true },
     ] as T;
   }
-  if (path === "/partner/venues" && method === "POST") return venue as T;
+  if (path === "/partner/venues" && method === "POST") {
+    mockVerification = { status: "PENDING", submittedAt: null, reason: null };
+    return { ...venue, ...mockVenueVerification(kind) } as T;
+  }
+  if (path.includes("/claim-dispute")) return undefined as T;
   if (path === "/partner/venues") return (kind === "novenue" ? [] : [venue, { ...venue, id: 2, name: "멍멍 호텔 성수", checkinCode: "zz9", checkinUrl: "https://pawstamp.rubi-on.com/i/checkin/zz9" }]) as T;
   if (path.includes("/checkins")) {
     if (kind === "empty") return [] as T;
@@ -512,4 +572,25 @@ async function mockUpload(file: Blob, onProgress: (r: number) => void): Promise<
   const photo: VenuePhoto = { id: ++mockPhotoSeq, url, thumbnailUrl: url, order: mockProfile.photos.length, hidden: false };
   mockProfile.photos = [...mockProfile.photos, photo];
   return photo;
+}
+
+/** 목업 인증 상태: ?mock=unverified|pending|rejected 로 시작, 그 외엔 인증 완료. 제출하면 pending 으로. */
+let mockVerification: { status: VerificationStatus; submittedAt: string | null; reason: string | null } | null = null;
+
+function mockVenueVerification(kind: string | null): Pick<Venue, "verificationStatus" | "verificationSubmittedAt" | "verificationRejectReason"> {
+  if (!mockVerification) {
+    mockVerification =
+      kind === "unverified"
+        ? { status: "PENDING", submittedAt: null, reason: null }
+        : kind === "pending"
+          ? { status: "PENDING", submittedAt: "2026-11-07T01:00:00Z", reason: null }
+          : kind === "rejected"
+            ? { status: "REJECTED", submittedAt: "2026-11-06T01:00:00Z", reason: "사업자등록증 사진이 흐려 상호와 번호를 읽을 수 없어요." }
+            : { status: "VERIFIED", submittedAt: "2026-11-01T01:00:00Z", reason: null };
+  }
+  return {
+    verificationStatus: mockVerification.status,
+    verificationSubmittedAt: mockVerification.submittedAt,
+    verificationRejectReason: mockVerification.reason,
+  };
 }

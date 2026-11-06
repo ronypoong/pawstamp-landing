@@ -5,6 +5,7 @@ import {
   fetchVenueProfile,
   fetchVenueStats,
   kstDate,
+  verificationStep,
   type Checkin,
   type CheckinVaccineStatus,
   type VenueStats,
@@ -73,7 +74,8 @@ export function PartnerDashboardPage() {
           이 매장은 체크인 받기가 꺼져 있어요. <Link to="/partner/me">내 정보</Link>에서 다시 켤 수 있어요.
         </p>
       )}
-      <ProfileNudge venueId={venue.id} />
+      {/* 인증 전엔 인증 배너가 유일한 주요 행동 — 꾸미기 넛지는 인증 매장에서만 */}
+      {verificationStep(venue) === "verified" && <ProfileNudge venueId={venue.id} />}
       <TodayCheckins venueId={venue.id} />
       <StatsSection venueId={venue.id} linked={venue.petCafeId != null} />
       <p className="p-legal">

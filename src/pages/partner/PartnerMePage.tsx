@@ -1,11 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { PartnerApiError, updatePartnerMe, updateVenue, type Venue } from "../../lib/partnerApi";
+import { PartnerApiError, updatePartnerMe, updateVenue, verificationStep, type Venue } from "../../lib/partnerApi";
+
+const STEP_LABEL = { verified: "인증 매장", pending: "확인 중", unsubmitted: "인증 전", rejected: "다시 제출 필요" } as const;
 import { usePartner } from "./PartnerLayout";
 
 /** 내 정보: 표시 이름 수정, 매장별 체크인 받기 켜고 끄기, 로그아웃. */
 export function PartnerMePage() {
-  const { me, setMe, venues, reloadVenues, logout, handleAuthError } = usePartner();
+  const { me, setMe, venues, reloadVenues, logout, handleAuthError, selectVenue } = usePartner();
   const [name, setName] = useState(me.name ?? "");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -91,7 +93,12 @@ export function PartnerMePage() {
           {venues.map((v) => (
             <li key={v.id}>
               <div className="p-venue-info">
-                <span className="p-venue-name">{v.name}</span>
+                <span className="p-venue-name">
+                  {v.name}{" "}
+                  <Link to="/partner/verify" onClick={() => selectVenue(v.id)} className={`vf-badge vf-badge--link${verificationStep(v) === "verified" ? " vf-badge--ok" : verificationStep(v) === "rejected" ? " vf-badge--danger" : ""}`}>
+                    {STEP_LABEL[verificationStep(v)]}
+                  </Link>
+                </span>
                 <span className="p-venue-meta">
                   {v.active ? "체크인 받는 중" : "체크인 꺼짐"}
                   {v.petCafeId ? " · 나들이 장소 연결됨" : ""}

@@ -1,6 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { PartnerApiError, createVenue, searchPlaces, type CreateVenueInput, type PlaceSearchItem } from "../../lib/partnerApi";
+import {
+  PartnerApiError,
+  createVenue,
+  searchPlaces,
+  submitClaimDispute,
+  type CreateVenueInput,
+  type PlaceSearchItem,
+} from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
 
 const CATEGORIES = ["애견카페", "애견동반 카페·식당", "애견호텔·유치원", "애견미용", "동물병원", "펫용품점", "운동장·놀이터", "기타"];
@@ -53,7 +60,7 @@ export function PartnerVenueNewPage() {
       const venue = await createVenue(input);
       await reloadVenues();
       selectVenue(venue.id);
-      navigate("/partner/poster?welcome=1", { replace: true });
+      navigate("/partner/verify?new=1", { replace: true });
     } catch (e) {
       if (handleAuthError(e)) return;
       setError(e instanceof PartnerApiError ? e.message : "등록하지 못했어요. 잠시 후 다시 시도해 주세요.");
@@ -132,6 +139,7 @@ export function PartnerVenueNewPage() {
                       <span className="p-place-meta">{[p.category, p.address].filter(Boolean).join(" · ")}</span>
                       {p.claimed && <span className="p-place-claimed">이미 다른 사장님이 등록한 매장이에요</span>}
                     </button>
+                    {p.claimed && <ClaimDispute place={p} />}
                   </li>
                 );
               })}
@@ -154,11 +162,6 @@ export function PartnerVenueNewPage() {
           <button type="button" className="p-link p-link--center" onClick={startManual}>
             목록에 없어요 · 직접 입력할게요
           </button>
-          {search.kind === "done" && search.items.some((p) => p.claimed) && (
-            <p className="p-fine">
-              우리 매장인데 이미 등록돼 있다면 <a href="mailto:pawstamp@rubi-on.com">pawstamp@rubi-on.com</a> 으로 알려 주세요.
-            </p>
-          )}
         </section>
       )}
 
@@ -213,6 +216,66 @@ export function PartnerVenueNewPage() {
           </button>
         </form>
       )}
+    </div>
+  );
+}
+
+/** 이미 다른 파트너가 연결한 장소: "내 매장인데 이미 등록돼 있어요" → 운영팀 확인 요청. */
+function ClaimDispute({ place }: { place: PlaceSearchItem }) {
+  const { handleAuthError } = usePartner();
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  if (state === "sent") {
+    return <p className="p-success cd-done">접수했어요. 운영팀이 확인한 뒤 로그인 이메일로 연락드릴게요.</p>;
+  }
+  if (!open) {
+    return (
+      <button type="button" className="p-link cd-open" onClick={() => setOpen(true)}>
+        내 매장인데 이미 등록돼 있어요
+      </button>
+    );
+  }
+  async function send() {
+    if (message.trim().length < 10) {
+      setError("상황을 10자 이상 적어 주세요.");
+      return;
+    }
+    setState("sending");
+    setError(null);
+    try {
+      await submitClaimDispute(place.petCafeId, message.trim());
+      setState("sent");
+    } catch (e) {
+      if (handleAuthError(e)) return;
+      setError(e instanceof PartnerApiError ? e.message : "보내지 못했어요. 잠시 후 다시 시도해 주세요.");
+      setState("idle");
+    }
+  }
+  return (
+    <div className="cd-box">
+      <label className="p-field">
+        <span className="p-label">운영팀에 알려 주세요</span>
+        <textarea
+          className="p-input pf-textarea cd-textarea"
+          rows={3}
+          maxLength={500}
+          placeholder="예) 제가 운영하는 매장인데 등록한 적이 없어요. 사업자등록증으로 확인 가능해요."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+      </label>
+      {error && <p className="p-error">{error}</p>}
+      <div className="cd-actions">
+        <button type="button" className="p-btn p-btn--text p-btn--sm" onClick={() => setOpen(false)}>
+          취소
+        </button>
+        <button type="button" className="p-btn p-btn--primary p-btn--sm" disabled={state === "sending"} onClick={() => void send()}>
+          {state === "sending" ? "보내는 중…" : "확인 요청 보내기"}
+        </button>
+      </div>
     </div>
   );
 }
