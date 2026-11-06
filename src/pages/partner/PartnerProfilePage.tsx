@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
-import { resizeImage } from "../../lib/imageResize";
+import { UnsupportedImageError, isAcceptedImage, resizeImage } from "../../lib/imageResize";
 import {
   PHOTO_LIMIT,
   PartnerApiError,
@@ -413,6 +413,12 @@ function usePhotoSlots(venueId: number, initial: VenuePhoto[], handleAuthError: 
           update(key, () => ({ key, kind: "photo", photo }));
         } catch (e) {
           if (handleAuthError(e)) return;
+          // 변환 불가 형식(크롬의 HEIC 등)은 다시 시도해도 안 되므로 타일을 빼고 안내만.
+          if (e instanceof UnsupportedImageError) {
+            setSlots((list) => list.filter((s) => s.key !== key));
+            setNotice(e.message);
+            return;
+          }
           const msg = e instanceof PartnerApiError ? e.message : "올리지 못했어요";
           update(key, (s) => (s.kind === "upload" ? { ...s, error: msg, progress: 0 } : s));
         }
@@ -424,8 +430,8 @@ function usePhotoSlots(venueId: number, initial: VenuePhoto[], handleAuthError: 
   const addFiles = useCallback(
     (files: File[]) => {
       setNotice(null);
-      const images = files.filter((f) => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name));
-      if (images.length < files.length) setNotice("사진 파일(jpg·png·webp·heic)만 올릴 수 있어요.");
+      const images = files.filter(isAcceptedImage);
+      if (images.length < files.length) setNotice("JPG·PNG·WEBP 사진만 올릴 수 있어요.");
       setSlots((list) => {
         const room = PHOTO_LIMIT - list.length;
         if (room <= 0) {

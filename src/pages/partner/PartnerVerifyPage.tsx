@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { resizeImage } from "../../lib/imageResize";
+import { HEIC_GUIDE, UnsupportedImageError, isAcceptedImage, isHeic, resizeImage } from "../../lib/imageResize";
 import { PartnerApiError, submitVerification, verificationStep, type Venue } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
 
@@ -120,8 +120,21 @@ function VerifyForm({ venue, isNew }: { venue: Venue; isNew: boolean }) {
     if (preview) URL.revokeObjectURL(preview);
   }, [preview]);
 
-  function pickFile(f: File | undefined) {
+  async function pickFile(f: File | undefined) {
     if (!f) return;
+    // HEIC 는 이 브라우저가 열 수 있을 때만(JPEG 로 변환해 보냄). 못 열면 바로 안내.
+    if (isHeic(f)) {
+      try {
+        (await createImageBitmap(f)).close();
+      } catch {
+        setErrors((e) => ({ ...e, file: HEIC_GUIDE }));
+        return;
+      }
+    }
+    if (f.type !== "application/pdf" && !isAcceptedImage(f)) {
+      setErrors((e) => ({ ...e, file: "JPG·PNG·WEBP 사진 또는 PDF만 올릴 수 있어요." }));
+      return;
+    }
     if (f.size > FILE_MAX_BYTES && f.type === "application/pdf") {
       setErrors((e) => ({ ...e, file: "10MB 이하 파일만 올릴 수 있어요." }));
       return;
@@ -158,6 +171,12 @@ function VerifyForm({ venue, isNew }: { venue: Venue; isNew: boolean }) {
       navigate(isNew ? "/partner/poster?welcome=1" : "/partner/verify", { replace: true });
     } catch (err) {
       if (handleAuthError(err)) return;
+      if (err instanceof UnsupportedImageError) {
+        setErrors((x) => ({ ...x, file: err.message }));
+        setFile(null);
+        setPreview(null);
+        return;
+      }
       setSubmitError(err instanceof PartnerApiError ? err.message : "제출하지 못했어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       setBusy(false);
@@ -197,7 +216,7 @@ function VerifyForm({ venue, isNew }: { venue: Venue; isNew: boolean }) {
 
       <div className="p-field">
         <span className="p-label">사업자등록증</span>
-        <input ref={fileRef} type="file" accept={ACCEPT} hidden onChange={(e) => { pickFile(e.target.files?.[0]); e.target.value = ""; }} />
+        <input ref={fileRef} type="file" accept={ACCEPT} hidden onChange={(e) => { void pickFile(e.target.files?.[0]); e.target.value = ""; }} />
         {file ? (
           <div className="vf-file">
             {preview ? <img src={preview} alt="사업자등록증 미리보기" /> : <span className="vf-file-icon">PDF</span>}
@@ -213,7 +232,7 @@ function VerifyForm({ venue, isNew }: { venue: Venue; isNew: boolean }) {
               <circle cx="12" cy="13" r="3.5" />
             </svg>
             사진 찍거나 파일 올리기
-            <small>글자가 잘 보이게 전체가 나오도록 찍어 주세요 (jpg·png·heic·pdf, 10MB 이하)</small>
+            <small>글자가 잘 보이게 전체가 나오도록 찍어 주세요 (JPG·PNG·WEBP 또는 PDF, 10MB 이하)</small>
           </button>
         )}
         {errors.file && <span className="p-error vf-err">{errors.file}</span>}
