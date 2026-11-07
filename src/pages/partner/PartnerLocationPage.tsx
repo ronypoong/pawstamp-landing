@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { PartnerApiError, setVenuePlace, type NaverPlace } from "../../lib/partnerApi";
+import {
+  PLACE_TYPES,
+  PartnerApiError,
+  guessPlaceType,
+  setVenuePlace,
+  type NaverPlace,
+  type PlaceTypeCode,
+} from "../../lib/partnerApi";
+import { MapPinField, isInKorea, type LatLng } from "./MapPinField";
 import { usePartner } from "./PartnerLayout";
 import { PlaceFinder } from "./PlaceFinder";
 
@@ -10,6 +18,9 @@ export function PartnerLocationPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [tab, setTab] = useState<"search" | "pin">("search");
+  const [pin, setPin] = useState<LatLng | null>(null);
+  const [pinType, setPinType] = useState<PlaceTypeCode>(() => guessPlaceType(venue?.category));
 
   useEffect(() => {
     document.title = "지도 위치 연결 — 발도장 파트너";
@@ -69,7 +80,53 @@ export function PartnerLocationPage() {
         </section>
       ) : (
         <section className="p-card">
-          <PlaceFinder initialQuery={venue.name} submitLabel="이 위치로 연결하기" busy={busy} onPick={(p) => void pick(p)} />
+          <div className="p-segment p-segment--sm pfd-seg" role="tablist" aria-label="위치 찾는 방법">
+            <button type="button" role="tab" aria-selected={tab === "search"} className={tab === "search" ? "active" : undefined} onClick={() => setTab("search")}>
+              검색으로 찾기
+            </button>
+            <button type="button" role="tab" aria-selected={tab === "pin"} className={tab === "pin" ? "active" : undefined} onClick={() => setTab("pin")}>
+              지도에서 직접 찍기
+            </button>
+          </div>
+          {tab === "search" ? (
+            <PlaceFinder initialQuery={venue.name} submitLabel="이 위치로 연결하기" busy={busy} onPick={(p) => void pick(p)} />
+          ) : (
+            <>
+              <MapPinField initial={null} value={pin} onChange={setPin} />
+              <label className="p-field pfd-pin-type">
+                <span className="p-label">업종</span>
+                <select className="p-input" value={pinType} onChange={(e) => setPinType(e.target.value as PlaceTypeCode)}>
+                  {PLACE_TYPES.map((t) => (
+                    <option key={t.code} value={t.code}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="p-btn p-btn--primary p-btn--block"
+                disabled={busy || !pin}
+                onClick={() => {
+                  if (!pin) return;
+                  if (!isInKorea(pin) && !window.confirm("찍은 위치가 한국 밖이에요. 이대로 연결할까요?")) return;
+                  void pick({
+                    name: venue.name,
+                    address: venue.address,
+                    roadAddress: venue.address,
+                    latitude: pin.lat,
+                    longitude: pin.lng,
+                    category: pinType,
+                    link: null,
+                    existingPetCafeId: null,
+                    claimed: false,
+                  });
+                }}
+              >
+                {busy ? "연결 중…" : "이 위치로 연결하기"}
+              </button>
+            </>
+          )}
           {error && <p className="p-error" role="alert">{error}</p>}
         </section>
       )}

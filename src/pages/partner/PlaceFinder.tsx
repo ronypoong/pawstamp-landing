@@ -9,6 +9,7 @@ import {
   type PlaceSearchType,
   type PlaceTypeCode,
 } from "../../lib/partnerApi";
+import { MapPinField, isInKorea, type LatLng } from "./MapPinField";
 import { usePartner } from "./PartnerLayout";
 
 type SearchState = { kind: "idle" } | { kind: "loading" } | { kind: "done"; items: NaverPlace[] } | { kind: "error"; message: string };
@@ -43,6 +44,9 @@ export function PlaceFinder({
   const [picked, setPicked] = useState<NaverPlace | null>(null);
   /** 선택한 후보의 업종(BE 장소 유형 코드). 네이버 카테고리로 기본값 추정, 사장님이 고칠 수 있음. */
   const [placeType, setPlaceType] = useState<PlaceTypeCode>("cafe");
+  /** 위치 미세 조정: 열면 지도 중심 좌표로 후보 좌표를 덮어쓴다. */
+  const [adjusting, setAdjusting] = useState(false);
+  const [pin, setPin] = useState<LatLng | null>(null);
 
   async function run(q: string, t: PlaceSearchType) {
     const v = q.trim();
@@ -146,6 +150,8 @@ export function PlaceFinder({
                   disabled={p.claimed}
                   onClick={() => {
                     setPicked(p);
+                    setAdjusting(false);
+                    setPin(null);
                     setPlaceType(guessPlaceType(p.category));
                   }}
                 >
@@ -177,6 +183,37 @@ export function PlaceFinder({
                     <span className="p-hint pfd-field-hint">발도장 앱 나들이 목록에서 이 업종으로 분류돼요.</span>
                   </label>
                 )}
+                {selected && (
+                  <div className="pfd-adjust">
+                    {adjusting ? (
+                      <>
+                        <MapPinField initial={{ lat: p.latitude, lng: p.longitude }} value={pin} onChange={setPin} />
+                        <button
+                          type="button"
+                          className="p-link"
+                          onClick={() => {
+                            setAdjusting(false);
+                            setPin(null);
+                          }}
+                        >
+                          조정 취소 · 검색된 위치 그대로 쓰기
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        className="p-btn p-btn--ghost p-btn--sm"
+                        onClick={(e) => {
+                          setAdjusting(true);
+                          const host = e.currentTarget.closest(".pfd-adjust");
+                          window.setTimeout(() => host?.scrollIntoView({ block: "center", behavior: "smooth" }), 80);
+                        }}
+                      >
+                        지도에서 위치 미세 조정
+                      </button>
+                    )}
+                  </div>
+                )}
                 <a className="pfd-map" href={naverMapUrl(p)} target="_blank" rel="noopener noreferrer">
                   네이버 지도에서 보기 ↗
                 </a>
@@ -189,9 +226,16 @@ export function PlaceFinder({
       {picked && (
         <button
           type="button"
-          className="p-btn p-btn--primary p-btn--block pfd-submit"
+          className={`p-btn p-btn--primary p-btn--block pfd-submit${adjusting ? " is-static" : ""}`}
           disabled={busy}
-          onClick={() => onPick({ ...picked, category: placeType })}
+          onClick={() => {
+            if (adjusting && pin && !isInKorea(pin) && !window.confirm("찍은 위치가 한국 밖이에요. 이대로 진행할까요?")) return;
+            onPick({
+              ...picked,
+              category: placeType,
+              ...(adjusting && pin ? { latitude: pin.lat, longitude: pin.lng } : {}),
+            });
+          }}
         >
           {busy ? "처리 중…" : submitLabel}
         </button>

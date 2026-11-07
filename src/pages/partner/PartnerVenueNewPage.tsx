@@ -5,13 +5,15 @@ import {
   createVenue,
   searchPlaces,
   submitClaimDispute,
+  PLACE_TYPES,
   type CreateVenueInput,
+  type PlaceTypeCode,
   type PlaceSearchItem,
 } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
 import { PlaceFinder } from "./PlaceFinder";
+import { MapPinField, isInKorea, type LatLng } from "./MapPinField";
 
-const CATEGORIES = ["애견카페", "애견동반 카페·식당", "애견호텔·유치원", "애견미용", "동물병원", "펫용품점", "운동장·놀이터", "기타"];
 
 type SearchState = { kind: "idle" } | { kind: "loading" } | { kind: "done"; items: PlaceSearchItem[] } | { kind: "error" };
 
@@ -25,7 +27,15 @@ export function PartnerVenueNewPage() {
   /** pick: 나들이 장소 검색 / naver: 네이버·주소로 위치 찾기 / manual: 위치 없이 직접 입력 */
   const [mode, setMode] = useState<"pick" | "naver" | "manual">("pick");
   const manual = mode !== "pick";
-  const [form, setForm] = useState({ name: "", address: "", category: CATEGORIES[0], phone: "" });
+  const [form, setForm] = useState<{ name: string; address: string; category: PlaceTypeCode; phone: string }>({
+    name: "",
+    address: "",
+    category: "cafe",
+    phone: "",
+  });
+  /** 직접 입력 경로의 지도 핀(선택). 찍으면 좌표 포함 naverPlace 로 등록 → 앱 지도에 표시 */
+  const [pinOpen, setPinOpen] = useState(false);
+  const [pin, setPin] = useState<LatLng | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,10 +87,29 @@ export function PartnerVenueNewPage() {
       setError("매장 이름과 주소를 입력해 주세요.");
       return;
     }
+    if (pinOpen && pin) {
+      if (!isInKorea(pin) && !window.confirm("찍은 위치가 한국 밖이에요. 이대로 등록할까요?")) return;
+      void submit({
+        naverPlace: {
+          name: form.name.trim(),
+          address: form.address.trim(),
+          roadAddress: form.address.trim(),
+          latitude: pin.lat,
+          longitude: pin.lng,
+          category: form.category,
+          telephone: form.phone.trim() || null,
+          link: null,
+          existingPetCafeId: null,
+          claimed: false,
+        },
+      });
+      return;
+    }
+    // 위치 없이 등록(기존 방식): 업종은 라벨 문자열로
     void submit({
       name: form.name.trim(),
       address: form.address.trim(),
-      category: form.category,
+      category: PLACE_TYPES.find((t) => t.code === form.category)?.label ?? form.category,
       ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
     });
   }
@@ -211,11 +240,19 @@ export function PartnerVenueNewPage() {
           >
             ← 지도 위치 찾기로 돌아가기
           </button>
-          <div className="p-banner p-banner--warn pfd-warn" role="status">
-            <div>
-              <b>앱 지도에는 아직 안 보여요.</b> 등록 후 '내 정보'에서 언제든 위치를 연결할 수 있어요.
+          {pinOpen ? (
+            <div className="p-banner pfd-warn" role="status">
+              <div>
+                <b>지도에서 찍은 위치로 앱 지도에 표시돼요.</b>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="p-banner p-banner--warn pfd-warn" role="status">
+              <div>
+                <b>앱 지도에는 아직 안 보여요.</b> 아래에서 지도에 위치를 찍거나, 등록 후 '내 정보'에서 연결할 수 있어요.
+              </div>
+            </div>
+          )}
           <label className="p-field">
             <span className="p-label">매장 이름</span>
             <input className="p-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
@@ -232,12 +269,38 @@ export function PartnerVenueNewPage() {
           </label>
           <label className="p-field">
             <span className="p-label">업종</span>
-            <select className="p-input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-              {CATEGORIES.map((c) => (
-                <option key={c}>{c}</option>
+            <select className="p-input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as PlaceTypeCode })}>
+              {PLACE_TYPES.map((t) => (
+                <option key={t.code} value={t.code}>
+                  {t.label}
+                </option>
               ))}
             </select>
           </label>
+          <div className="p-field">
+            <span className="p-label">
+              지도 위치 <span className="p-optional">(선택)</span>
+            </span>
+            {pinOpen ? (
+              <>
+                <MapPinField initial={null} value={pin} onChange={setPin} />
+                <button
+                  type="button"
+                  className="p-link"
+                  onClick={() => {
+                    setPinOpen(false);
+                    setPin(null);
+                  }}
+                >
+                  지도 위치 빼고 등록하기
+                </button>
+              </>
+            ) : (
+              <button type="button" className="p-btn p-btn--ghost p-btn--block" onClick={() => setPinOpen(true)}>
+                지도에서 위치 찍기
+              </button>
+            )}
+          </div>
           <label className="p-field">
             <span className="p-label">
               전화번호 <span className="p-optional">(선택)</span>
