@@ -4,6 +4,7 @@ import { BrandPaw } from "../../components/BrandPaw";
 import { QrCode } from "../../components/QrCode";
 import { verificationStep } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
+import { VenueTitle } from "./VenueTitle";
 
 type PaperSize = "A4" | "A5";
 
@@ -57,10 +58,12 @@ export function PartnerPosterPage() {
         </div>
       )}
 
+      <div className="no-print">
+        <VenueTitle suffix="QR 포스터" />
+      </div>
       <div className="poster-layout">
         <aside className="poster-controls no-print">
-          <h1 className="p-title">QR 포스터</h1>
-          <p className="p-sub">손님이 앱으로 찍으면 펫 패스가 오늘 방문 목록에 바로 들어와요.</p>
+          <p className="p-sub poster-sub-first">손님이 앱으로 찍으면 펫 패스가 오늘 방문 목록에 바로 들어와요.</p>
 
           <div className="p-field">
             <span className="p-label">용지 크기</span>

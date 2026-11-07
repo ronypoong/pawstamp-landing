@@ -5229,3 +5229,224 @@ a:hover {
 .pfd-pin-type {
   margin-top: 14px;
 }
+
+/* ─── 다매장 제목 · 위치 카드 · 매장 삭제 ─────── */
+.vt-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 12px;
+  flex-wrap: wrap;
+}
+.vt-title {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.vt-venue {
+  overflow-wrap: anywhere;
+}
+.vt-suffix {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.vt-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.vt-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.vt-switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.vt-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+}
+.vt-switch select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 16px;
+}
+.vt-switch:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.vt-add {
+  white-space: nowrap;
+}
+.poster-sub-first {
+  margin-top: 0;
+}
+.pf-location {
+  padding: 16px;
+}
+.loc-current {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  font-size: 14px;
+  font-weight: 600;
+}
+.loc-current .p-label {
+  margin-bottom: 2px;
+}
+
+/* 위치 카드 */
+.vl {
+  display: grid;
+  gap: 10px;
+}
+.sm {
+  position: relative;
+  height: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+.vl--compact .sm {
+  height: 120px;
+}
+.sm-map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.sm-pin {
+  z-index: 500;
+}
+.sm .leaflet-control-attribution {
+  font-size: 9px;
+}
+.vl-row,
+.vl--empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+  flex-wrap: wrap;
+}
+.vl-text {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 14px;
+}
+.vl-text .p-label {
+  margin-bottom: 2px;
+}
+.vl-name {
+  font-weight: 700;
+}
+.vl-address {
+  color: var(--text-muted);
+}
+.vl-public {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.vl-empty {
+  color: var(--text-muted);
+}
+
+/* 내 정보 매장 카드 */
+.p-venue-list li.vm-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px 0;
+}
+.vm-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.vm-delete {
+  justify-self: stretch;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 8px 0 0;
+  border-top: 1px dashed var(--border-subtle);
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+.vm-delete:hover {
+  color: var(--danger-ink);
+}
+
+/* 매장 삭제 */
+.p-btn--danger {
+  background: var(--danger-ink);
+  color: #fff;
+}
+.p-btn--danger:hover:not(:disabled) {
+  filter: brightness(0.9);
+  color: #fff;
+}
+/* 꺼진 위험 버튼은 무채색 — 빨강은 입력이 맞았을 때만 */
+.p-btn--danger:disabled {
+  background: var(--surface-alt);
+  color: var(--text-subtle);
+  opacity: 1;
+}
+.vd-suffix {
+  color: var(--danger-ink);
+}
+.vd-lead {
+  margin: 0 0 8px;
+  font-weight: 800;
+}
+.vd-list {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.vd-list b {
+  color: var(--text);
+}
+.vd-name {
+  display: inline-block;
+  margin: 2px 0 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--surface-alt);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+.vm-deleted {
+  background: var(--surface-alt);
+}
+.loc-pin-hint {
+  margin: 8px 0 0;
+}
+.mp-locate--top {
+  top: 10px;
+  bottom: auto;
+}

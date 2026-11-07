@@ -19,6 +19,8 @@ import {
 } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
 import { AppPreview } from "./ProfilePreview";
+import { VenueLocationCard } from "./VenueLocationCard";
+import { VenueTitle } from "./VenueTitle";
 
 const TAGLINE_MAX = 40;
 const DESCRIPTION_MAX = 1000;
@@ -238,10 +240,8 @@ function ProfileEditor({ venue, initial, tagDefs }: { venue: Venue; initial: Ven
 
       <div className="pf-layout">
         <div className="pf-form">
-          <header className="p-page-head">
-            <h1 className="p-title">매장 꾸미기</h1>
-            <p className="p-sub">사진과 소개를 채우면 발도장 앱 나들이 장소에 우리 매장이 더 잘 보여요.</p>
-            <p className="pf-progress">
+          <VenueTitle suffix="꾸미기" sub="사진과 소개를 채우면 발도장 앱 나들이 장소에 우리 매장이 더 잘 보여요." />
+          <p className="pf-progress">
               {completeness.map((c, i) => (
                 <span key={c.label} className={c.done ? "is-done" : undefined}>
                   {i > 0 && " · "}
@@ -250,8 +250,11 @@ function ProfileEditor({ venue, initial, tagDefs }: { venue: Venue; initial: Ven
                 </span>
               ))}{" "}
               ({completeness.filter((c) => c.done).length}/{completeness.length})
-            </p>
-          </header>
+          </p>
+
+          <section className="p-card pf-location">
+            <VenueLocationCard venue={venue} compact />
+          </section>
 
           <details className="p-card pf-preview-m">
             <summary>앱에서 어떻게 보이는지 보기</summary>

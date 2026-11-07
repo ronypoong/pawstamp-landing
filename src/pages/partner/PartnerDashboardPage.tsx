@@ -11,6 +11,7 @@ import {
   type VenueStats,
 } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
+import { VenueTitle } from "./VenueTitle";
 import { LocationMissingBanner } from "./PartnerLocationPage";
 
 const POLL_MS = 30_000;
@@ -70,6 +71,7 @@ export function PartnerDashboardPage() {
   if (!venue) return null;
   return (
     <div className="p-dash">
+      <VenueTitle suffix="방문 현황" />
       {!venue.active && (
         <p className="p-banner p-banner--warn">
           이 매장은 체크인 받기가 꺼져 있어요. <Link to="/partner/me">내 정보</Link>에서 다시 켤 수 있어요.

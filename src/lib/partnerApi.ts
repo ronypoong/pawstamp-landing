@@ -48,6 +48,18 @@ export interface Venue {
   verificationRejectReason?: string | null;
   /** 지도 좌표 연결 여부. false 면 앱 지도에 안 나옴(구 응답엔 없을 수 있음). */
   hasLocation?: boolean;
+  /** 현재 지도 위치(없으면 null). editable=false 면 공공 나들이 장소에 연결된 상태 */
+  location?: VenueLocation | null;
+}
+
+export interface VenueLocation {
+  petCafeId: number | null;
+  name: string | null;
+  address: string | null;
+  roadAddress: string | null;
+  latitude: number;
+  longitude: number;
+  editable: boolean;
 }
 
 /** 네이버 장소/주소 검색 후보 */
@@ -300,6 +312,11 @@ export function createVenue(input: CreateVenueInput): Promise<Venue> {
 
 export function fetchVenues(): Promise<Venue[]> {
   return request<Venue[]>("/partner/venues");
+}
+
+/** 매장 삭제. confirmName 은 매장명과 같아야 한다(서버 재검증). */
+export function deleteVenue(id: number, confirmName: string): Promise<void> {
+  return request<void>(`/partner/venues/${id}`, { method: "DELETE", body: JSON.stringify({ confirmName }) });
 }
 
 export function updateVenue(id: number, patch: { name?: string; phone?: string; active?: boolean }): Promise<Venue> {
@@ -592,6 +609,18 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
     createdAt: "2026-11-01T00:00:00Z",
     ...mockVenueVerification(kind),
     hasLocation: mockHasLocation ?? kind !== "noloc",
+    location:
+      (mockHasLocation ?? kind !== "noloc")
+        ? {
+            petCafeId: 10,
+            name: "멍멍 플레이그라운드 성수점",
+            address: "서울 성동구 성수동2가 300-1",
+            roadAddress: "서울 성동구 성수이로 00",
+            latitude: 37.5445,
+            longitude: 127.0557,
+            editable: kind !== "public",
+          }
+        : null,
   };
   const method = init.method ?? "GET";
   if (path.startsWith("/partner/auth/email/verify")) {
@@ -631,7 +660,19 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
     mockHasLocation = true;
     return { ...venue, hasLocation: true } as T;
   }
-  if (path === "/partner/venues") return (kind === "novenue" ? [] : [venue, { ...venue, id: 2, name: "멍멍 호텔 성수", checkinCode: "zz9", checkinUrl: "https://pawstamp.rubi-on.com/i/checkin/zz9" }]) as T;
+  if (/^\/partner\/venues\/\d+$/.test(path) && method === "DELETE") {
+    const id = Number(path.split("/").pop());
+    const { confirmName } = JSON.parse(String(init.body)) as { confirmName: string };
+    const name = id === 1 ? venue.name : "멍멍 호텔 성수";
+    if (confirmName.trim() !== name) throw new PartnerApiError(422, "매장명이 일치하지 않아요.", "PARTNER_VENUE_NAME_MISMATCH");
+    mockDeleted.add(id);
+    return undefined as T;
+  }
+  if (path === "/partner/venues") {
+    if (kind === "novenue") return [] as T;
+    const all = kind === "single" ? [venue] : [venue, { ...venue, id: 2, name: "멍멍 호텔 성수", checkinCode: "zz9", checkinUrl: "https://pawstamp.rubi-on.com/i/checkin/zz9" }];
+    return all.filter((v) => !mockDeleted.has(v.id)) as T;
+  }
   if (path.includes("/checkins")) {
     if (kind === "empty") return [] as T;
     const now = Date.now();
@@ -739,6 +780,7 @@ async function mockUpload(file: Blob, onProgress: (r: number) => void): Promise<
 
 /** 목업 인증 상태: ?mock=unverified|pending|rejected 로 시작, 그 외엔 인증 완료. 제출하면 pending 으로. */
 let mockHasLocation: boolean | null = null;
+const mockDeleted = new Set<number>();
 let mockVerificationInfo: { bizNo: string; ownerName: string; openDate: string; businessName: string } | null = null;
 let mockVerification: { status: VerificationStatus; submittedAt: string | null; reason: string | null } | null = null;
 

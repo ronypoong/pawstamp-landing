@@ -144,7 +144,7 @@ export function PartnerLayout() {
   // 매장이 하나도 없으면 매장 등록부터.
   useEffect(() => {
     if (!ready) return;
-    const free = ["/partner/venues/new", "/partner/me"];
+    const free = ["/partner/venues/new", "/partner/me", "/partner/delete"];
     if (ready.venues.length === 0 && !free.includes(location.pathname)) {
       navigate("/partner/venues/new", { replace: true });
     }
@@ -234,7 +234,7 @@ export function PartnerLayout() {
           </nav>
         )}
         <main className="p-main">
-          {hasVenue && !["/partner/verify", "/partner/venues/new", "/partner/me", "/partner/location"].includes(location.pathname) && <VerificationBanner />}
+          {hasVenue && !["/partner/verify", "/partner/venues/new", "/partner/me", "/partner/location", "/partner/delete"].includes(location.pathname) && <VerificationBanner />}
           <Outlet />
         </main>
       </PartnerShell>

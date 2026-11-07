@@ -27,10 +27,13 @@ function distanceM(a: LatLng, b: LatLng): number {
 /** 지도 핀 찍기 + 안내·범위 경고. value 는 현재 지도 중심. */
 export function MapPinField({
   initial,
+  originLabel = "검색된 위치",
   value,
   onChange,
 }: {
   initial: LatLng | null;
+  /** 시작 좌표의 이름(상태 문구·되돌리기 버튼에 쓰임) */
+  originLabel?: string;
   value: LatLng | null;
   onChange: (c: LatLng) => void;
 }) {
@@ -38,7 +41,7 @@ export function MapPinField({
     <div className="mpf">
       <p className="p-hint mpf-hint">지도를 손가락으로 끌어 가운데 핀 끝을 매장 입구에 맞춰 주세요.</p>
       <Suspense fallback={<div className="pass-skeleton mp-skeleton" aria-busy="true" aria-label="지도 불러오는 중" />}>
-        <MapPinPicker initial={initial} fallback={SEOUL_CITY_HALL} onChange={onChange} />
+        <MapPinPicker initial={initial} recenterLabel={`${originLabel}로 되돌리기`} fallback={SEOUL_CITY_HALL} onChange={onChange} />
       </Suspense>
       {/* 지도 아래 상태 한 줄: 한국 밖이면 경고, 아니면 안심 피드백 */}
       {value && !isInKorea(value) ? (
@@ -49,8 +52,8 @@ export function MapPinField({
         <p className="p-hint mpf-status" aria-live="polite">
           {initial
             ? distanceM(initial, value) <= 5
-              ? "검색된 위치 그대로예요"
-              : `검색된 위치에서 약 ${Math.round(distanceM(initial, value))}m 옮겼어요`
+              ? `${originLabel} 그대로예요`
+              : `${originLabel}에서 약 ${Math.round(distanceM(initial, value))}m 옮겼어요`
             : "가운데 핀 위치로 등록돼요"}
         </p>
       ) : null}

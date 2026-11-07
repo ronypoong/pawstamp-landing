@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import {
   PartnerApiError,
@@ -13,6 +13,7 @@ import {
 
 const STEP_LABEL = { verified: "인증 매장", pending: "확인 중", unsubmitted: "인증 전", rejected: "다시 확인 필요" } as const;
 import { usePartner } from "./PartnerLayout";
+import { VenueLocationCard } from "./VenueLocationCard";
 
 /** 내 정보: 표시 이름 수정, 매장별 체크인 받기 켜고 끄기, 로그아웃. */
 export function PartnerMePage() {
@@ -21,6 +22,7 @@ export function PartnerMePage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const deletedName = (useLocation().state as { deleted?: string } | null)?.deleted ?? null;
 
   useEffect(() => {
     document.title = "내 정보 — 발도장 파트너";
@@ -70,6 +72,11 @@ export function PartnerMePage() {
       <header className="p-page-head">
         <h1 className="p-title">내 정보</h1>
       </header>
+      {deletedName && (
+        <p className="p-banner vm-deleted" role="status">
+          ‘{deletedName}’ 매장을 삭제했어요.
+        </p>
+      )}
 
       <form className="p-card" onSubmit={saveName} noValidate>
         <div className="p-field">
@@ -100,7 +107,8 @@ export function PartnerMePage() {
         <h2 className="p-card-title">내 매장</h2>
         <ul className="p-venue-list">
           {venues.map((v) => (
-            <li key={v.id}>
+            <li key={v.id} className="vm-card">
+              <div className="vm-row">
               <div className="p-venue-info">
                 <span className="p-venue-name">
                   {v.name}{" "}
@@ -111,15 +119,6 @@ export function PartnerMePage() {
                 </span>
                 <span className="p-venue-meta">
                   {v.active ? "체크인 받는 중" : "체크인 꺼짐"}
-                  {v.hasLocation !== false && v.petCafeId ? " · 나들이 장소 연결됨" : ""}
-                  {v.hasLocation === false && (
-                    <>
-                      {" · "}
-                      <Link className="p-link pfd-me-link" to="/partner/location" onClick={() => selectVenue(v.id)}>
-                        위치 연결하기 →
-                      </Link>
-                    </>
-                  )}
                 </span>
               </div>
               <button
@@ -130,6 +129,11 @@ export function PartnerMePage() {
               >
                 {v.active ? "끄기" : "켜기"}
               </button>
+              </div>
+              <VenueLocationCard venue={v} compact />
+              <Link className="p-link vm-delete" to={`/partner/delete?venue=${v.id}`} onClick={() => selectVenue(v.id)}>
+                매장 삭제
+              </Link>
             </li>
           ))}
         </ul>

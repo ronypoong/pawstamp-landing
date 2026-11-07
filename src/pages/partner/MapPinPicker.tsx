@@ -14,10 +14,12 @@ export interface LatLng {
  */
 export default function MapPinPicker({
   initial,
+  recenterLabel = "검색 위치로 되돌리기",
   fallback,
   onChange,
 }: {
   initial: LatLng | null;
+  recenterLabel?: string;
   fallback: LatLng;
   onChange: (c: LatLng) => void;
 }) {
@@ -28,6 +30,8 @@ export default function MapPinPicker({
   const [locating, setLocating] = useState(false);
   const [locateFailed, setLocateFailed] = useState(false);
   const [moving, setMoving] = useState(false);
+  /** 시작 좌표에서 약 5m 넘게 옮겼는지 — 되돌리기 버튼은 옮겼을 때만 */
+  const [moved, setMoved] = useState(false);
 
   useEffect(() => {
     if (!boxRef.current) return;
@@ -45,6 +49,7 @@ export default function MapPinPicker({
     map.attributionControl.setPrefix(false);
     const emit = () => {
       const c = map.getCenter();
+      if (initial) setMoved(map.distance(c, [initial.lat, initial.lng]) > 5);
       onChangeRef.current({ lat: c.lat, lng: c.lng });
     };
     map.on("movestart", () => setMoving(true));
@@ -61,6 +66,9 @@ export default function MapPinPicker({
 
     return () => {
       window.clearTimeout(t);
+      // 애니메이션 중 제거되면 leaflet 이 _leaflet_pos 오류를 내므로 멈추고 이벤트를 떼고 제거
+      map.stop();
+      map.off();
       map.remove();
       mapRef.current = null;
     };
@@ -108,13 +116,15 @@ export default function MapPinPicker({
       </div>
       {/* 미세 조정(시작 좌표 있음)에선 '내 위치'가 엉뚱한 곳(집·사무실)으로 보낼 수 있어 '검색 위치로 되돌리기' */}
       {initial ? (
-        <button type="button" className="mp-locate" onClick={() => mapRef.current?.setView([initial.lat, initial.lng], 18)}>
+        moved && (
+        <button type="button" className="mp-locate mp-locate--top" onClick={() => mapRef.current?.setView([initial.lat, initial.lng], 18)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M3 12a9 9 0 1 0 3-6.7" />
             <path d="M3 4v5h5" />
           </svg>
-          검색 위치로 되돌리기
+          {recenterLabel}
         </button>
+        )
       ) : (
         <button type="button" className="mp-locate" onClick={() => locate(mapRef.current, false)} disabled={locating}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>

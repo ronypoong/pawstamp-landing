@@ -20,6 +20,7 @@ import { PartnerMePage } from "./pages/partner/PartnerMePage";
 import { PartnerProfilePage } from "./pages/partner/PartnerProfilePage";
 import { PartnerVerifyPage } from "./pages/partner/PartnerVerifyPage";
 import { PartnerLocationPage } from "./pages/partner/PartnerLocationPage";
+import { PartnerDeletePage } from "./pages/partner/PartnerDeletePage";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/partner/venues/new" element={<PartnerVenueNewPage />} />
         <Route path="/partner/verify" element={<PartnerVerifyPage />} />
         <Route path="/partner/location" element={<PartnerLocationPage />} />
+        <Route path="/partner/delete" element={<PartnerDeletePage />} />
         <Route path="/partner/profile" element={<PartnerProfilePage />} />
         <Route path="/partner/poster" element={<PartnerPosterPage />} />
         <Route path="/partner/me" element={<PartnerMePage />} />
