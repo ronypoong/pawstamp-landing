@@ -17,7 +17,7 @@ export function Footer() {
           </a>
         </div>
         <div className="footer-links">
-          <Link to="/partner">사장님이신가요? 파트너 안내</Link>
+          <Link to="/partner">매장 제휴 신청 (무료)</Link>
           <a href={`mailto:${CONTACT_EMAIL}`}>문의: {CONTACT_EMAIL}</a>
           {/* 정적 페이지(public/guide.html) — SPA 라우트가 아니라 일반 링크로 연다. */}
           <a href="/guide">자주 묻는 질문</a>

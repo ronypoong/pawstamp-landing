@@ -44,7 +44,7 @@ export function PartnerIntroPage() {
 
   useEffect(() => {
     const prev = document.title;
-    document.title = "사장님을 위한 발도장 파트너 — 반려견 접종 확인 QR";
+    document.title = "매장 제휴 신청 — 발도장 파트너(무료)";
     return () => {
       document.title = prev;
     };
@@ -55,7 +55,7 @@ export function PartnerIntroPage() {
       <section className="pi-hero">
         <div className="container pi-hero-grid">
           <div>
-            <p className="pi-eyebrow">애견카페·호텔·미용실 사장님을 위한 발도장 파트너 · 무료</p>
+            <p className="pi-eyebrow">매장 제휴 · 애견카페·호텔·미용실 사장님을 위한 발도장 파트너 · 무료</p>
             <h1 className="pi-title">
               QR 한 장 붙이면
               <br />
