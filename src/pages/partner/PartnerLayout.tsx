@@ -234,7 +234,7 @@ export function PartnerLayout() {
           </nav>
         )}
         <main className="p-main">
-          {hasVenue && !["/partner/verify", "/partner/venues/new", "/partner/me"].includes(location.pathname) && <VerificationBanner />}
+          {hasVenue && !["/partner/verify", "/partner/venues/new", "/partner/me", "/partner/location"].includes(location.pathname) && <VerificationBanner />}
           <Outlet />
         </main>
       </PartnerShell>
@@ -248,6 +248,8 @@ function VerificationBanner() {
   if (!venue) return null;
   const step = verificationStep(venue);
   if (step === "verified") return null;
+  // 위치도 없으면 '공개까지 남은 단계' 카드 하나로 합친다(primary CTA 는 다음 할 일 하나).
+  if (venue.hasLocation === false) return <PublishStepsBanner step={step} />;
   if (step === "rejected") {
     return (
       <div className="p-banner vf-banner" role="status">
@@ -279,6 +281,36 @@ function VerificationBanner() {
           인증하기
         </Link>
       )}
+    </div>
+  );
+}
+
+function PublishStepsBanner({ step }: { step: Exclude<ReturnType<typeof verificationStep>, "verified"> }) {
+  return (
+    <div className="p-banner vf-banner pub-steps" role="status">
+      <div>
+        <b>앱에 공개하려면 2가지만 하면 돼요.</b>
+        <ol className="pub-list">
+          <li>
+            <span className="pub-no">1</span>지도 위치 연결
+          </li>
+          <li>
+            <span className="pub-no">2</span>사업자 인증
+            {step === "pending" && <span className="vf-badge">확인 중(보통 1영업일)</span>}
+            {step === "rejected" && <span className="vf-badge vf-badge--danger">다시 확인 필요</span>}
+          </li>
+        </ol>
+      </div>
+      <div className="pub-actions">
+        <Link className="p-btn p-btn--primary" to="/partner/location">
+          지도 위치 연결하기
+        </Link>
+        {step !== "pending" && (
+          <Link className="p-link" to="/partner/verify">
+            인증 먼저 하기
+          </Link>
+        )}
+      </div>
     </div>
   );
 }

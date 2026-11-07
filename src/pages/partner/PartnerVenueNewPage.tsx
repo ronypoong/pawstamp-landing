@@ -9,6 +9,7 @@ import {
   type PlaceSearchItem,
 } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
+import { PlaceFinder } from "./PlaceFinder";
 
 const CATEGORIES = ["애견카페", "애견동반 카페·식당", "애견호텔·유치원", "애견미용", "동물병원", "펫용품점", "운동장·놀이터", "기타"];
 
@@ -21,7 +22,9 @@ export function PartnerVenueNewPage() {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState<SearchState>({ kind: "idle" });
   const [picked, setPicked] = useState<PlaceSearchItem | null>(null);
-  const [manual, setManual] = useState(false);
+  /** pick: 나들이 장소 검색 / naver: 네이버·주소로 위치 찾기 / manual: 위치 없이 직접 입력 */
+  const [mode, setMode] = useState<"pick" | "naver" | "manual">("pick");
+  const manual = mode !== "pick";
   const [form, setForm] = useState({ name: "", address: "", category: CATEGORIES[0], phone: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export function PartnerVenueNewPage() {
   }
 
   function startManual() {
-    setManual(true);
+    setMode("manual");
     setPicked(null);
     setError(null);
     setForm((f) => ({ ...f, name: f.name || query.trim() }));
@@ -95,7 +98,11 @@ export function PartnerVenueNewPage() {
         <p className="p-eyebrow">{venues.length === 0 ? "1단계 · 매장 등록" : "매장 추가"}</p>
         <h1 className="p-title">어떤 매장인가요?</h1>
         <p className="p-sub">
-          발도장 나들이 장소에 이미 있는 매장이면 연결해 주세요. 앱에서 우리 매장을 본 횟수까지 함께 보여드려요.
+          {mode === "naver"
+            ? "네이버 지도에서 우리 매장을 골라 주세요. 앱 지도에 그 위치로 표시돼요."
+            : mode === "manual"
+              ? "매장 정보를 직접 적어 주세요."
+              : "발도장 나들이 장소에 이미 있는 매장이면 연결해 주세요. 앱에서 우리 매장을 본 횟수까지 함께 보여드려요."}
         </p>
       </header>
 
@@ -159,14 +166,56 @@ export function PartnerVenueNewPage() {
             </button>
           )}
 
-          <button type="button" className="p-link p-link--center" onClick={startManual}>
-            목록에 없어요 · 직접 입력할게요
+          <button
+            type="button"
+            className="p-link p-link--center"
+            onClick={() => {
+              setMode("naver");
+              setPicked(null);
+              setError(null);
+            }}
+          >
+            목록에 없어요 · 네이버 지도에서 찾기
           </button>
         </section>
       )}
 
-      {manual && (
+      {mode === "naver" && (
+        <section className="p-card">
+          <PlaceFinder
+            onBack={() => {
+              setMode("pick");
+              setError(null);
+            }}
+            backLabel="나들이 장소 검색으로"
+            initialQuery={query}
+            submitLabel="이 위치로 등록하기"
+            busy={busy}
+            // 기존 나들이 장소와 같은 곳(이름·50m)이면 BE 가 그 장소에 연결한다.
+            onPick={(p) => void submit({ naverPlace: p })}
+            onManual={startManual}
+          />
+          {error && <p className="p-error" role="alert">{error}</p>}
+        </section>
+      )}
+
+      {mode === "manual" && (
         <form className="p-card" onSubmit={submitManual} noValidate>
+          <button
+            type="button"
+            className="p-link pfd-back"
+            onClick={() => {
+              setMode("naver");
+              setError(null);
+            }}
+          >
+            ← 지도 위치 찾기로 돌아가기
+          </button>
+          <div className="p-banner p-banner--warn pfd-warn" role="status">
+            <div>
+              <b>앱 지도에는 아직 안 보여요.</b> 등록 후 '내 정보'에서 언제든 위치를 연결할 수 있어요.
+            </div>
+          </div>
           <label className="p-field">
             <span className="p-label">매장 이름</span>
             <input className="p-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
@@ -179,6 +228,7 @@ export function PartnerVenueNewPage() {
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
             />
+            <span className="p-hint pfd-field-hint">주소를 적어 두면 나중에 위치 연결이 쉬워요.</span>
           </label>
           <label className="p-field">
             <span className="p-label">업종</span>
@@ -203,16 +253,6 @@ export function PartnerVenueNewPage() {
           {error && <p className="p-error" role="alert">{error}</p>}
           <button type="submit" className="p-btn p-btn--primary p-btn--block" disabled={busy}>
             {busy ? "등록 중…" : "매장 등록하기"}
-          </button>
-          <button
-            type="button"
-            className="p-link p-link--center"
-            onClick={() => {
-              setManual(false);
-              setError(null);
-            }}
-          >
-            나들이 장소에서 다시 찾기
           </button>
         </form>
       )}

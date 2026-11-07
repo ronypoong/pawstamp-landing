@@ -2742,9 +2742,11 @@ a:hover {
   color: var(--text);
   cursor: pointer;
 }
-.p-place:hover:not(:disabled) {
-  border-color: var(--border);
-  background: var(--surface-alt);
+@media (hover: hover) {
+  .p-place:hover:not(:disabled) {
+    border-color: var(--border);
+    background: var(--surface-alt);
+  }
 }
 .p-place.is-selected {
   border-color: var(--ink);
@@ -2824,12 +2826,16 @@ a:hover {
   flex: none;
   margin-top: 1px;
 }
+.vf-badge--warn {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
 .p-banner--warn {
   background: var(--warn-soft);
   color: var(--warn-ink);
   font-weight: 600;
 }
-.p-banner--warn a {
+.p-banner--warn a:not(.p-btn) {
   color: inherit;
   text-decoration: underline;
 }
@@ -4917,4 +4923,164 @@ a:hover {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
+}
+
+/* ─── 지도 위치 찾기(네이버 장소·주소) ─────────── */
+.pfd-field {
+  margin-bottom: 8px;
+}
+.pfd-row {
+  display: flex;
+  gap: 8px;
+}
+.pfd-row .p-btn {
+  flex: none;
+  min-height: 50px;
+}
+.pfd .p-place-list {
+  gap: 10px;
+}
+.pfd-item {
+  display: grid;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.pfd-item .p-place {
+  border: 0;
+  border-radius: 0;
+}
+.pfd-item.is-selected {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink) inset;
+}
+.pfd-item .p-place.is-selected {
+  background: var(--surface);
+  box-shadow: none;
+}
+.pfd-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pfd-check {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pfd-seg {
+  margin-bottom: 12px;
+}
+.pfd-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  margin: -8px 0 4px;
+  font-size: 13px;
+  text-decoration: none;
+}
+.pfd-inline {
+  min-height: 0;
+  padding: 0;
+  font-size: inherit;
+}
+.pfd-submit {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 5;
+  box-shadow: var(--shadow-soft);
+}
+.pfd-field-hint {
+  display: block;
+  margin: 6px 0 0;
+}
+.pfd-jibun {
+  font-size: 12px;
+}
+.pfd-known {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.pfd-map {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pfd-fallbacks {
+  margin-top: 4px;
+}
+.pfd-warn {
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+.pub-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+.pub-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pub-no {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+.pub-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pfd-banner {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.pfd-banner > div {
+  flex: 1 1 240px;
+}
+.pfd-banner .p-btn {
+  flex: none;
+}
+.pfd-me-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  font-size: 13px;
+  vertical-align: middle;
+}
+.pfd-type {
+  display: block;
+  padding: 0 14px 12px;
 }

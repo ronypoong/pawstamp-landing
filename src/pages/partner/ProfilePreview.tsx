@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { HoursDay, TagDef, Venue, VenuePhoto, VenueProfileInput } from "../../lib/partnerApi";
+import { verificationStep, type HoursDay, type TagDef, type Venue, type VenuePhoto, type VenueProfileInput } from "../../lib/partnerApi";
 
 const KST_DAYS: HoursDay[] = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
@@ -67,8 +67,10 @@ export function AppPreview({
     <div className="ap">
       <p className="ap-title">앱에서 이렇게 보여요</p>
       {hidden && <p className="ap-hidden">지금은 운영자가 숨겨 앱에 보이지 않아요</p>}
-      {venue.petCafeId == null && (
-        <p className="ap-note">아직 나들이 장소와 연결되지 않은 매장이에요. 연결되면 앱 목록에 이렇게 보여요.</p>
+      {venue.hasLocation === false ? (
+        <p className="ap-note">지도 위치를 연결하고 사업자 인증을 마치면 앱 목록에 이렇게 보여요.</p>
+      ) : (
+        verificationStep(venue) !== "verified" && <p className="ap-note">사업자 인증 후 앱에 이렇게 보여요.</p>
       )}
 
       <p className="ap-caption">나들이 목록</p>

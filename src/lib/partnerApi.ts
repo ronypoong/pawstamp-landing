@@ -46,6 +46,55 @@ export interface Venue {
   verificationSubmittedAt?: string | null;
   /** REJECTED 사유 */
   verificationRejectReason?: string | null;
+  /** 지도 좌표 연결 여부. false 면 앱 지도에 안 나옴(구 응답엔 없을 수 있음). */
+  hasLocation?: boolean;
+}
+
+/** 네이버 장소/주소 검색 후보 */
+export interface NaverPlace {
+  name: string;
+  address: string | null;
+  roadAddress: string | null;
+  latitude: number;
+  longitude: number;
+  category: string | null;
+  /** 네이버 지도 링크(있으면) */
+  link?: string | null;
+  telephone?: string | null;
+  /** 이미 발도장 나들이 장소로 있는 곳이면 그 id */
+  existingPetCafeId: number | null;
+  /** 다른 파트너가 이미 연결한 곳 */
+  claimed: boolean;
+}
+
+export type PlaceSearchType = "place" | "address";
+
+/** BE 가 naverPlace.category 로 받는 장소 유형 코드 */
+export type PlaceTypeCode = "cafe" | "restaurant" | "park" | "camping" | "stay" | "daycare" | "grooming" | "hospital";
+
+export const PLACE_TYPES: { code: PlaceTypeCode; label: string }[] = [
+  { code: "cafe", label: "애견카페" },
+  { code: "restaurant", label: "음식점·카페(일반)" },
+  { code: "daycare", label: "유치원·호텔" },
+  { code: "grooming", label: "미용" },
+  { code: "stay", label: "숙소" },
+  { code: "camping", label: "캠핑" },
+  { code: "hospital", label: "동물병원" },
+  { code: "park", label: "공원·운동장" },
+];
+
+/** 네이버 카테고리 문자열(예: "카페,디저트>애견카페")로 업종 기본값 추정. */
+export function guessPlaceType(category: string | null | undefined): PlaceTypeCode {
+  const c = category ?? "";
+  if (/동물병원/.test(c)) return "hospital";
+  if (/애견미용|펫미용|미용/.test(c) && /애견|반려|펫|동물/.test(c)) return "grooming";
+  if (/애견카페|반려견카페|강아지카페|펫카페/.test(c)) return "cafe";
+  if (/애견호텔|펫호텔|유치원|펫시터|위탁/.test(c)) return "daycare";
+  if (/캠핑|글램핑|야영|오토캠핑/.test(c)) return "camping";
+  if (/펜션|숙박|호텔|리조트|게스트하우스|모텔|민박|풀빌라/.test(c)) return "stay";
+  if (/공원|운동장|놀이터|산책/.test(c)) return "park";
+  if (/음식점|식당|카페|디저트|베이커리|한식|양식|일식|중식|분식|주점|술집|브런치|레스토랑/.test(c)) return "restaurant";
+  return "cafe";
 }
 
 export type VerificationStatus = "PENDING" | "VERIFIED" | "REJECTED";
@@ -72,7 +121,10 @@ export interface VerificationInput {
 
 export type CreateVenueInput =
   | { petCafeId: number }
+  | { naverPlace: NaverPlace }
   | { name: string; address: string; category: string; phone?: string };
+
+export type VenuePlaceInput = { petCafeId: number } | { naverPlace: NaverPlace };
 
 export interface CheckinItem {
   code: string;
@@ -212,6 +264,34 @@ export function updatePartnerMe(name: string): Promise<PartnerProfile> {
 // ─── 매장 ────────────────────────────────────
 export function searchPlaces(q: string): Promise<PlaceSearchItem[]> {
   return request<PlaceSearchItem[]>(`/partner/places/search?q=${encodeURIComponent(q)}`);
+}
+
+/** 네이버 장소 검색(type=place) 또는 도로명 주소 검색(type=address). */
+export async function searchNaverPlaces(q: string, type: PlaceSearchType): Promise<NaverPlace[]> {
+  let list: NaverPlace[];
+  try {
+    list = await request<NaverPlace[]>(`/partner/places/naver-search?q=${encodeURIComponent(q)}&type=${type}`);
+  } catch (e) {
+    if (e instanceof PartnerApiError && e.status === 429) {
+      throw new PartnerApiError(429, "검색을 너무 자주 했어요. 1분 뒤 다시 찾아 주세요.", e.code);
+    }
+    if (e instanceof PartnerApiError && e.status === 503) {
+      throw new PartnerApiError(503, "지금은 네이버 검색을 쓸 수 없어요. 잠시 후 다시 시도해 주세요.", e.code);
+    }
+    throw e;
+  }
+  return (list ?? []).filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude));
+}
+
+/** 좌표 없는 매장에 위치 연결. */
+export function setVenuePlace(venueId: number, input: VenuePlaceInput): Promise<Venue> {
+  return request<Venue>(`/partner/venues/${venueId}/place`, { method: "PUT", body: JSON.stringify(input) });
+}
+
+/** 네이버 지도에서 보기 링크(후보에 link 가 없으면 이름+주소 검색). */
+export function naverMapUrl(p: Pick<NaverPlace, "name" | "roadAddress" | "address" | "link">): string {
+  if (p.link && /^https?:\/\//.test(p.link)) return p.link;
+  return `https://map.naver.com/p/search/${encodeURIComponent(`${p.name} ${p.roadAddress || p.address || ""}`.trim())}`;
 }
 
 export function createVenue(input: CreateVenueInput): Promise<Venue> {
@@ -511,6 +591,7 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
     active: true,
     createdAt: "2026-11-01T00:00:00Z",
     ...mockVenueVerification(kind),
+    hasLocation: mockHasLocation ?? kind !== "noloc",
   };
   const method = init.method ?? "GET";
   if (path.startsWith("/partner/auth/email/verify")) {
@@ -526,9 +607,30 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
   }
   if (path === "/partner/venues" && method === "POST") {
     mockVerification = { status: "PENDING", submittedAt: null, reason: null };
-    return { ...venue, ...mockVenueVerification(kind) } as T;
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+    mockHasLocation = "naverPlace" in body || "petCafeId" in body;
+    return { ...venue, ...mockVenueVerification(kind), hasLocation: mockHasLocation } as T;
   }
   if (path.includes("/claim-dispute")) return undefined as T;
+  if (path.startsWith("/partner/places/naver-search")) {
+    const qs = new URLSearchParams(path.split("?")[1]);
+    const q = qs.get("q") ?? "";
+    if (q.includes("없음")) return [] as T;
+    if (qs.get("type") === "address") {
+      return [
+        { name: q, address: "서울 성동구 성수동2가 300-1", roadAddress: `서울 성동구 ${q}`, latitude: 37.5445, longitude: 127.0557, category: null, link: null, existingPetCafeId: null, claimed: false },
+      ] as T;
+    }
+    return [
+      { name: `${q} 성수점`, address: "서울 성동구 성수동2가 300-1", roadAddress: "서울 성동구 성수이로 00", latitude: 37.5445, longitude: 127.0557, category: "카페,디저트>애견카페", link: null, telephone: "02-123-4567", existingPetCafeId: null, claimed: false },
+      { name: `${q} 홍대점`, address: "서울 마포구 서교동 400", roadAddress: "서울 마포구 와우산로 00", latitude: 37.5512, longitude: 126.9227, category: "애견카페", link: null, existingPetCafeId: 11, claimed: true },
+      { name: `${q} 강남점`, address: "서울 강남구 역삼동 500", roadAddress: "서울 강남구 테헤란로 00", latitude: 37.5, longitude: 127.03, category: "애견동반 카페", link: null, existingPetCafeId: 12, claimed: false },
+    ] as T;
+  }
+  if (path.endsWith("/place") && method === "PUT") {
+    mockHasLocation = true;
+    return { ...venue, hasLocation: true } as T;
+  }
   if (path === "/partner/venues") return (kind === "novenue" ? [] : [venue, { ...venue, id: 2, name: "멍멍 호텔 성수", checkinCode: "zz9", checkinUrl: "https://pawstamp.rubi-on.com/i/checkin/zz9" }]) as T;
   if (path.includes("/checkins")) {
     if (kind === "empty") return [] as T;
@@ -636,6 +738,7 @@ async function mockUpload(file: Blob, onProgress: (r: number) => void): Promise<
 }
 
 /** 목업 인증 상태: ?mock=unverified|pending|rejected 로 시작, 그 외엔 인증 완료. 제출하면 pending 으로. */
+let mockHasLocation: boolean | null = null;
 let mockVerificationInfo: { bizNo: string; ownerName: string; openDate: string; businessName: string } | null = null;
 let mockVerification: { status: VerificationStatus; submittedAt: string | null; reason: string | null } | null = null;
 

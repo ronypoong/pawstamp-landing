@@ -107,10 +107,19 @@ export function PartnerMePage() {
                   <Link to="/partner/verify" onClick={() => selectVenue(v.id)} className={`vf-badge vf-badge--link${verificationStep(v) === "verified" ? " vf-badge--ok" : verificationStep(v) === "rejected" ? " vf-badge--danger" : ""}`}>
                     {STEP_LABEL[verificationStep(v)]}
                   </Link>
+                  {v.hasLocation === false && <span className="vf-badge vf-badge--warn">지도 위치 없음</span>}
                 </span>
                 <span className="p-venue-meta">
                   {v.active ? "체크인 받는 중" : "체크인 꺼짐"}
-                  {v.petCafeId ? " · 나들이 장소 연결됨" : ""}
+                  {v.hasLocation !== false && v.petCafeId ? " · 나들이 장소 연결됨" : ""}
+                  {v.hasLocation === false && (
+                    <>
+                      {" · "}
+                      <Link className="p-link pfd-me-link" to="/partner/location" onClick={() => selectVenue(v.id)}>
+                        위치 연결하기 →
+                      </Link>
+                    </>
+                  )}
                 </span>
               </div>
               <button
