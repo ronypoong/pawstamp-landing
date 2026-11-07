@@ -5,6 +5,7 @@ import { QrCode } from "../../components/QrCode";
 import { verificationStep } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
 import { VenueTitle } from "./VenueTitle";
+import { UnlistedBanner } from "./UnlistedBanner";
 
 type PaperSize = "A4" | "A5";
 
@@ -60,6 +61,7 @@ export function PartnerPosterPage() {
 
       <div className="no-print">
         <VenueTitle suffix="QR 포스터" />
+        <UnlistedBanner />
       </div>
       <div className="poster-layout">
         <aside className="poster-controls no-print">

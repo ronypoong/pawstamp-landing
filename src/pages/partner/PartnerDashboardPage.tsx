@@ -6,12 +6,14 @@ import {
   fetchVenueStats,
   kstDate,
   verificationStep,
+  isListed,
   type Checkin,
   type CheckinVaccineStatus,
   type VenueStats,
 } from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
 import { VenueTitle } from "./VenueTitle";
+import { UnlistedBanner } from "./UnlistedBanner";
 import { LocationMissingBanner } from "./PartnerLocationPage";
 
 const POLL_MS = 30_000;
@@ -72,6 +74,7 @@ export function PartnerDashboardPage() {
   return (
     <div className="p-dash">
       <VenueTitle suffix="방문 현황" />
+      <UnlistedBanner />
       {!venue.active && (
         <p className="p-banner p-banner--warn">
           이 매장은 체크인 받기가 꺼져 있어요. <Link to="/partner/me">내 정보</Link>에서 다시 켤 수 있어요.
@@ -80,7 +83,7 @@ export function PartnerDashboardPage() {
       {/* 인증 전엔 레이아웃의 '공개까지 남은 단계' 카드가 위치 연결까지 안내 */}
       {verificationStep(venue) === "verified" && <LocationMissingBanner />}
       {/* 인증 전엔 인증 배너가 유일한 주요 행동 — 꾸미기 넛지는 인증 매장에서만 */}
-      {verificationStep(venue) === "verified" && <ProfileNudge venueId={venue.id} />}
+      {verificationStep(venue) === "verified" && isListed(venue) && <ProfileNudge venueId={venue.id} />}
       <TodayCheckins venueId={venue.id} />
       <StatsSection venueId={venue.id} linked={venue.petCafeId != null} />
       <p className="p-legal">

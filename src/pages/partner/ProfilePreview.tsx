@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { verificationStep, type HoursDay, type TagDef, type Venue, type VenuePhoto, type VenueProfileInput } from "../../lib/partnerApi";
+import { isListed, verificationStep, type HoursDay, type TagDef, type Venue, type VenuePhoto, type VenueProfileInput } from "../../lib/partnerApi";
 
 const KST_DAYS: HoursDay[] = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
@@ -67,7 +67,9 @@ export function AppPreview({
     <div className="ap">
       <p className="ap-title">앱에서 이렇게 보여요</p>
       {hidden && <p className="ap-hidden">지금은 운영자가 숨겨 앱에 보이지 않아요</p>}
-      {venue.hasLocation === false ? (
+      {!isListed(venue) ? (
+        <p className="ap-note">지금은 앱 표시가 꺼져 있어요. 다시 켜면 앱 목록에 이렇게 보여요.</p>
+      ) : venue.hasLocation === false ? (
         <p className="ap-note">지도 위치를 연결하고 사업자 인증을 마치면 앱 목록에 이렇게 보여요.</p>
       ) : (
         verificationStep(venue) !== "verified" && <p className="ap-note">사업자 인증 후 앱에 이렇게 보여요.</p>

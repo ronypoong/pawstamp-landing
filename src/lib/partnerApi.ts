@@ -48,6 +48,8 @@ export interface Venue {
   verificationRejectReason?: string | null;
   /** 지도 좌표 연결 여부. false 면 앱 지도에 안 나옴(구 응답엔 없을 수 있음). */
   hasLocation?: boolean;
+  /** 발도장 앱(나들이 목록·지도)에 표시 여부. false 면 체크인도 멈춤. 구 응답엔 없을 수 있음(=표시) */
+  listed?: boolean;
   /** 현재 지도 위치(없으면 null). editable=false 면 공공 나들이 장소에 연결된 상태 */
   location?: VenueLocation | null;
 }
@@ -319,7 +321,12 @@ export function deleteVenue(id: number, confirmName: string): Promise<void> {
   return request<void>(`/partner/venues/${id}`, { method: "DELETE", body: JSON.stringify({ confirmName }) });
 }
 
-export function updateVenue(id: number, patch: { name?: string; phone?: string; active?: boolean }): Promise<Venue> {
+/** 앱 표시 여부(필드 없으면 표시로 간주) */
+export function isListed(v: Venue): boolean {
+  return v.listed !== false;
+}
+
+export function updateVenue(id: number, patch: { name?: string; phone?: string; active?: boolean; listed?: boolean }): Promise<Venue> {
   return request<Venue>(`/partner/venues/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
 }
 
@@ -671,7 +678,14 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
   if (path === "/partner/venues") {
     if (kind === "novenue") return [] as T;
     const all = kind === "single" ? [venue] : [venue, { ...venue, id: 2, name: "멍멍 호텔 성수", checkinCode: "zz9", checkinUrl: "https://pawstamp.rubi-on.com/i/checkin/zz9" }];
-    return all.filter((v) => !mockDeleted.has(v.id)) as T;
+    return all
+      .filter((v) => !mockDeleted.has(v.id))
+      .map((v) => ({ ...v, listed: kind !== "unlisted", ...mockVenuePatch.get(v.id) })) as T;
+  }
+  if (/^\/partner\/venues\/\d+$/.test(path) && method === "PATCH") {
+    const id = Number(path.split("/").pop());
+    mockVenuePatch.set(id, { ...mockVenuePatch.get(id), ...(JSON.parse(String(init.body)) as Partial<Venue>) });
+    return { ...venue, id, ...mockVenuePatch.get(id) } as T;
   }
   if (path.includes("/checkins")) {
     if (kind === "empty") return [] as T;
@@ -781,6 +795,7 @@ async function mockUpload(file: Blob, onProgress: (r: number) => void): Promise<
 /** 목업 인증 상태: ?mock=unverified|pending|rejected 로 시작, 그 외엔 인증 완료. 제출하면 pending 으로. */
 let mockHasLocation: boolean | null = null;
 const mockDeleted = new Set<number>();
+const mockVenuePatch = new Map<number, Partial<Venue>>();
 let mockVerificationInfo: { bizNo: string; ownerName: string; openDate: string; businessName: string } | null = null;
 let mockVerification: { status: VerificationStatus; submittedAt: string | null; reason: string | null } | null = null;
 

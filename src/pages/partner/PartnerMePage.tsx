@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import {
   PartnerApiError,
   fetchVerificationInfo,
+  isListed,
   updatePartnerMe,
   updateVenue,
   verificationStep,
@@ -13,6 +14,7 @@ import {
 
 const STEP_LABEL = { verified: "인증 매장", pending: "확인 중", unsubmitted: "인증 전", rejected: "다시 확인 필요" } as const;
 import { usePartner } from "./PartnerLayout";
+import { VenueSwitch } from "./VenueSwitch";
 import { VenueLocationCard } from "./VenueLocationCard";
 
 /** 내 정보: 표시 이름 수정, 매장별 체크인 받기 켜고 끄기, 로그아웃. */
@@ -49,16 +51,18 @@ export function PartnerMePage() {
     }
   }
 
-  async function toggle(v: Venue) {
-    const ok = window.confirm(
-      v.active
-        ? `'${v.name}'의 체크인 받기를 끌까요?\n포스터 QR을 찍어도 체크인이 되지 않아요.`
-        : `'${v.name}'의 체크인 받기를 다시 켤까요?`,
-    );
-    if (!ok) return;
+  /** 스위치 변경: 끌 때만 확인(되돌릴 수 있음 강조), 켤 때는 바로. */
+  async function setFlag(v: Venue, field: "listed" | "active", next: boolean) {
+    if (!next) {
+      const msg =
+        field === "listed"
+          ? `'${v.name}' 매장을 발도장 앱에서 숨길까요?\n\n나들이 목록·지도에서 사라지고 QR 체크인도 멈춰요.\n언제든 다시 켜면 바로 돌아와요.`
+          : `'${v.name}' 매장의 체크인을 멈출까요?\n\n앱에는 그대로 보이고, 포스터 QR 체크인만 멈춰요.\n언제든 다시 켤 수 있어요.`;
+      if (!window.confirm(msg)) return;
+    }
     setTogglingId(v.id);
     try {
-      await updateVenue(v.id, { active: !v.active });
+      await updateVenue(v.id, { [field]: next });
       await reloadVenues();
     } catch (err) {
       if (!handleAuthError(err)) window.alert(err instanceof PartnerApiError ? err.message : "변경하지 못했어요.");
@@ -116,19 +120,32 @@ export function PartnerMePage() {
                     {STEP_LABEL[verificationStep(v)]}
                   </Link>
                   {v.hasLocation === false && <span className="vf-badge vf-badge--warn">지도 위치 없음</span>}
-                </span>
-                <span className="p-venue-meta">
-                  {v.active ? "체크인 받는 중" : "체크인 꺼짐"}
+                  {!isListed(v) && <span className="vf-badge vf-badge--warn">앱에 숨김</span>}
                 </span>
               </div>
-              <button
-                type="button"
-                className="p-btn p-btn--ghost p-btn--sm"
-                disabled={togglingId === v.id}
-                onClick={() => void toggle(v)}
-              >
-                {v.active ? "끄기" : "켜기"}
-              </button>
+              </div>
+              <div className="vs">
+                <VenueSwitch
+                  label="발도장 앱에 표시"
+                  on={isListed(v)}
+                  disabled={togglingId === v.id}
+                  desc={isListed(v) ? "끄면 나들이 목록·지도에서 사라지고 체크인도 멈춰요." : "앱에서 숨겨져 있어요. 켜면 바로 다시 보여요."}
+                  warn={!isListed(v)}
+                  onChange={(next) => void setFlag(v, "listed", next)}
+                />
+                <VenueSwitch
+                  label="체크인 받기"
+                  on={isListed(v) && v.active}
+                  disabled={togglingId === v.id || !isListed(v)}
+                  desc={
+                    !isListed(v)
+                      ? "앱 표시가 꺼져 있어 체크인도 멈춰 있어요."
+                      : v.active
+                        ? "끄면 앱에는 보이고 QR 체크인만 멈춰요."
+                        : "지금 QR 체크인이 멈춰 있어요."
+                  }
+                  onChange={(next) => void setFlag(v, "active", next)}
+                />
               </div>
               <VenueLocationCard venue={v} compact />
               <Link className="p-link vm-delete" to={`/partner/delete?venue=${v.id}`} onClick={() => selectVenue(v.id)}>

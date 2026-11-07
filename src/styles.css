@@ -5450,3 +5450,76 @@ a:hover {
   top: 10px;
   bottom: auto;
 }
+
+/* ─── 매장 표시·체크인 스위치 ───────────────── */
+.vs {
+  display: grid;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.vs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.vs-row + .vs-row {
+  border-top: 1px solid var(--border-subtle);
+}
+.vs-row.is-disabled {
+  cursor: default;
+}
+.vs-row.is-disabled .vs-label {
+  color: var(--text-muted);
+}
+.vs-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.vs-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+.vs-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.vs-switch {
+  min-height: 44px;
+}
+.pf-switch input:disabled + .pf-switch-track {
+  opacity: 0.45;
+}
+.ul-banner {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ul-banner > div {
+  flex: 1 1 240px;
+}
+.ul-banner .p-btn {
+  flex: none;
+}
+.vs-desc.is-warn {
+  color: var(--warn-ink);
+}
+.p-banner--warn.ul-banner {
+  color: var(--text);
+  font-weight: 400;
+}
+.ul-banner b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--warn-ink);
+  font-weight: 700;
+}
+.ul-banner > div {
+  word-break: keep-all;
+}

@@ -21,6 +21,7 @@ import { usePartner } from "./PartnerLayout";
 import { AppPreview } from "./ProfilePreview";
 import { VenueLocationCard } from "./VenueLocationCard";
 import { VenueTitle } from "./VenueTitle";
+import { UnlistedBanner } from "./UnlistedBanner";
 
 const TAGLINE_MAX = 40;
 const DESCRIPTION_MAX = 1000;
@@ -241,6 +242,7 @@ function ProfileEditor({ venue, initial, tagDefs }: { venue: Venue; initial: Ven
       <div className="pf-layout">
         <div className="pf-form">
           <VenueTitle suffix="꾸미기" sub="사진과 소개를 채우면 발도장 앱 나들이 장소에 우리 매장이 더 잘 보여요." />
+          <UnlistedBanner />
           <p className="pf-progress">
               {completeness.map((c, i) => (
                 <span key={c.label} className={c.done ? "is-done" : undefined}>
