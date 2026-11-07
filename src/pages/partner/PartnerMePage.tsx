@@ -1,8 +1,17 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { PartnerApiError, updatePartnerMe, updateVenue, verificationStep, type Venue } from "../../lib/partnerApi";
+import {
+  PartnerApiError,
+  fetchVerificationInfo,
+  updatePartnerMe,
+  updateVenue,
+  verificationStep,
+  type Venue,
+  type VerificationInfo,
+} from "../../lib/partnerApi";
 
-const STEP_LABEL = { verified: "인증 매장", pending: "확인 중", unsubmitted: "인증 전", rejected: "다시 제출 필요" } as const;
+const STEP_LABEL = { verified: "인증 매장", pending: "확인 중", unsubmitted: "인증 전", rejected: "다시 확인 필요" } as const;
 import { usePartner } from "./PartnerLayout";
 
 /** 내 정보: 표시 이름 수정, 매장별 체크인 받기 켜고 끄기, 로그아웃. */
@@ -120,6 +129,14 @@ export function PartnerMePage() {
         </Link>
       </section>
 
+      <section className="p-card">
+        <h2 className="p-card-title">사업자 정보</h2>
+        <p className="p-hint">인증에 쓴 정보예요. 확인에만 쓰고 앱이나 손님에게 보이지 않아요.</p>
+        {venues.map((v) => (
+          <BizInfo key={v.id} venue={v} showName={venues.length > 1} />
+        ))}
+      </section>
+
       <button
         type="button"
         className="p-btn p-btn--text p-btn--block"
@@ -129,6 +146,102 @@ export function PartnerMePage() {
       >
         로그아웃
       </button>
+    </div>
+  );
+}
+
+function fmtDateTime(iso: string | null): string {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "-";
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(d);
+}
+
+/** 매장별 사업자 정보(마스킹) + [수정] → 인증 폼(이전 값 미리 채움). */
+function BizInfo({ venue, showName }: { venue: Venue; showName: boolean }) {
+  const { selectVenue, handleAuthError } = usePartner();
+  const navigate = useNavigate();
+  const [state, setState] = useState<{ kind: "loading" } | { kind: "ok"; info: VerificationInfo | null } | { kind: "error" }>({ kind: "loading" });
+  const step = verificationStep(venue);
+
+  useEffect(() => {
+    let alive = true;
+    fetchVerificationInfo(venue.id)
+      .then((info) => alive && setState({ kind: "ok", info }))
+      .catch((e) => {
+        if (!alive || handleAuthError(e)) return;
+        setState({ kind: "error" });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [venue.id, venue.verificationStatus, handleAuthError]);
+
+  const go = (path: string) => {
+    selectVenue(venue.id);
+    navigate(path);
+  };
+
+  return (
+    <div className="biz">
+      <div className="biz-head">
+        {showName && <span className="biz-venue">{venue.name}</span>}
+        <span className={`vf-badge${step === "verified" ? " vf-badge--ok" : step === "rejected" ? " vf-badge--danger" : ""}`}>
+          {STEP_LABEL[step]}
+        </span>
+      </div>
+      {state.kind === "loading" && <div className="pass-skeleton biz-skeleton" aria-busy="true" />}
+      {state.kind === "error" && <p className="p-hint">사업자 정보를 불러오지 못했어요.</p>}
+      {state.kind === "ok" && !state.info && (
+        <div className="biz-empty">
+          <p className="p-hint">아직 사업자 인증 전이에요.</p>
+          <button type="button" className="p-btn p-btn--primary p-btn--sm" onClick={() => go("/partner/verify")}>
+            인증하기
+          </button>
+        </div>
+      )}
+      {state.kind === "ok" && state.info && (
+        <>
+          <dl className="biz-list">
+            <div>
+              <dt>사업자번호</dt>
+              <dd>{state.info.bizNoMasked || "-"}</dd>
+            </div>
+            <div>
+              <dt>대표자명</dt>
+              <dd>{state.info.ownerNameMasked || "-"}</dd>
+            </div>
+            <div>
+              <dt>개업일</dt>
+              <dd>{state.info.openDate ? state.info.openDate.replace(/-/g, ".") : "-"}</dd>
+            </div>
+            <div>
+              <dt>상호</dt>
+              <dd>{state.info.businessName || "-"}</dd>
+            </div>
+            <div>
+              <dt>마지막 확인</dt>
+              <dd>{fmtDateTime(state.info.checkedAt)}</dd>
+            </div>
+          </dl>
+          <div className="biz-actions">
+            <button type="button" className="p-btn p-btn--ghost p-btn--sm" onClick={() => go("/partner/verify?edit=1")}>
+              사업자 정보 수정
+            </button>
+            <button type="button" className="p-btn p-btn--text p-btn--sm" onClick={() => go("/partner/profile")}>
+              매장 소개·연락처 수정
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

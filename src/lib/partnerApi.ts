@@ -66,8 +66,8 @@ export interface VerificationInput {
   ownerName: string;
   /** YYYYMMDD */
   openDate: string;
-  file: Blob;
-  fileName: string;
+  /** 상호(사업자등록증 상호명). 매장명과 다르면 서버가 PENDING 으로 두고 운영팀 확인. */
+  businessName: string;
 }
 
 export type CreateVenueInput =
@@ -364,22 +364,77 @@ export function uploadVenuePhoto(venueId: number, file: Blob, fileName: string, 
   return postMultipart<VenuePhoto>(`/partner/venues/${venueId}/photos`, form, onProgress, "사진을 올리지 못했어요.", true);
 }
 
-/** 사업자 인증 서류 제출(multipart bizNo, ownerName, openDate, file). */
-export async function submitVerification(venueId: number, input: VerificationInput, onProgress: (r: number) => void): Promise<void> {
+/**
+ * 사업자 인증(국세청 자동 진위확인). JSON {bizNo, ownerName, openDate, businessName}.
+ * 200 → 갱신된 매장(VERIFIED 또는 상호 불일치 시 PENDING). 422 → 국세청 정보 불일치(서버 메시지 표시).
+ * 응답에 매장이 없으면 null(호출부가 목록을 다시 불러 판단).
+ */
+export async function submitVerification(venueId: number, input: VerificationInput): Promise<Venue | null> {
   if (import.meta.env.DEV && isMockMode()) {
-    for (let i = 1; i <= 4; i++) {
-      await new Promise((res) => setTimeout(res, 150));
-      onProgress(i / 4);
+    await new Promise((res) => setTimeout(res, 600));
+    // 목업: 대표자명 '불일치' → 422, 상호가 매장명과 다르면 PENDING, 그 외 VERIFIED
+    if (input.ownerName === "불일치") {
+      throw new PartnerApiError(422, "국세청 등록 정보와 일치하지 않아요. 사업자번호·대표자명·개업일을 다시 확인해 주세요.", "VERIFICATION_MISMATCH");
     }
-    mockVerification = { status: "PENDING", submittedAt: new Date().toISOString(), reason: null };
-    return;
+    const sameName = input.businessName.replace(/\s/g, "") === "멍멍플레이그라운드성수점";
+    mockVerification = { status: sameName ? "VERIFIED" : "PENDING", submittedAt: new Date().toISOString(), reason: null };
+    mockVerificationInfo = {
+      bizNo: `${input.bizNo.slice(0, 3)}-${input.bizNo.slice(3, 5)}-*****`,
+      ownerName: input.ownerName.charAt(0) + "*".repeat(Math.max(1, input.ownerName.length - 2)) + (input.ownerName.length > 2 ? input.ownerName.slice(-1) : ""),
+      openDate: input.openDate,
+      businessName: input.businessName,
+    };
+    return null;
   }
-  const form = new FormData();
-  form.append("bizNo", input.bizNo);
-  form.append("ownerName", input.ownerName);
-  form.append("openDate", input.openDate);
-  form.append("file", input.file, input.fileName);
-  await postMultipart<unknown>(`/partner/venues/${venueId}/verification`, form, onProgress, "제출하지 못했어요. 잠시 후 다시 시도해 주세요.", false);
+  const venue = await request<Venue | null>(`/partner/venues/${venueId}/verification`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return venue && typeof venue === "object" && "verificationStatus" in venue ? venue : null;
+}
+
+/** 제출한 사업자 정보(마스킹). 서버가 내려주는 필드명 차이를 여기서 흡수한다. */
+export interface VerificationInfo {
+  /** 예: 123-45-***** */
+  bizNoMasked: string;
+  /** 예: 김*수 */
+  ownerNameMasked: string;
+  /** YYYY-MM-DD */
+  openDate: string | null;
+  businessName: string | null;
+  status: VerificationStatus | null;
+  /** 마지막 확인(국세청 조회/운영팀 확인) 시각 ISO */
+  checkedAt: string | null;
+}
+
+function toIsoDate(d: string | null | undefined): string | null {
+  if (!d) return null;
+  const digits = d.replace(/\D/g, "");
+  return digits.length === 8 ? `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}` : null;
+}
+
+/** 제출 전이면(404) null. */
+export async function fetchVerificationInfo(venueId: number): Promise<VerificationInfo | null> {
+  let raw: Record<string, unknown> | null;
+  try {
+    raw = await request<Record<string, unknown> | null>(`/partner/venues/${venueId}/verification`);
+  } catch (e) {
+    if (e instanceof PartnerApiError && e.status === 404) return null;
+    throw e;
+  }
+  if (!raw) return null;
+  const str = (...keys: string[]) => {
+    for (const k of keys) if (typeof raw![k] === "string" && raw![k]) return raw![k] as string;
+    return null;
+  };
+  return {
+    bizNoMasked: str("bizNoMasked", "maskedBizNo", "bizNo") ?? "",
+    ownerNameMasked: str("ownerNameMasked", "maskedOwnerName", "ownerName") ?? "",
+    openDate: toIsoDate(str("openDate")),
+    businessName: str("businessName"),
+    status: (str("status", "verificationStatus") as VerificationStatus | null) ?? null,
+    checkedAt: str("checkedAt", "lastCheckedAt", "verifiedAt", "updatedAt", "submittedAt"),
+  };
 }
 
 /** 이미 다른 파트너가 연결한 장소에 대한 소유 이의 제기. */
@@ -494,6 +549,12 @@ async function devMock<T>(path: string, init: RequestInit): Promise<T> {
       ],
     })) as T;
   }
+  if (path.endsWith("/verification") && method === "GET") {
+    const v = mockVenueVerification(kind);
+    if (!v.verificationSubmittedAt) throw new PartnerApiError(404, "not found");
+    const info = mockVerificationInfo ?? { bizNo: "220-81-*****", ownerName: "김*장", openDate: "20200301", businessName: "멍멍 플레이그라운드" };
+    return { ...info, status: v.verificationStatus, checkedAt: v.verificationSubmittedAt } as T;
+  }
   if (path.endsWith("/profile")) {
     if (method === "PUT") {
       mockProfile = { ...mockProfile, ...(JSON.parse(String(init.body)) as VenueProfileInput) };
@@ -575,6 +636,7 @@ async function mockUpload(file: Blob, onProgress: (r: number) => void): Promise<
 }
 
 /** 목업 인증 상태: ?mock=unverified|pending|rejected 로 시작, 그 외엔 인증 완료. 제출하면 pending 으로. */
+let mockVerificationInfo: { bizNo: string; ownerName: string; openDate: string; businessName: string } | null = null;
 let mockVerification: { status: VerificationStatus; submittedAt: string | null; reason: string | null } | null = null;
 
 function mockVenueVerification(kind: string | null): Pick<Venue, "verificationStatus" | "verificationSubmittedAt" | "verificationRejectReason"> {

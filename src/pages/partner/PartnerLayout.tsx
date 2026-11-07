@@ -252,12 +252,12 @@ function VerificationBanner() {
     return (
       <div className="p-banner vf-banner" role="status">
         <div>
-          <span className="vf-badge vf-badge--danger">다시 제출 필요</span>{" "}
+          <span className="vf-badge vf-badge--danger">다시 확인 필요</span>{" "}
           <b>사업자 인증에서 한 가지만 고쳐 주세요.</b>
           {venue.verificationRejectReason && <div className="vf-banner-reason">{venue.verificationRejectReason}</div>}
         </div>
         <Link className="p-btn p-btn--primary" to="/partner/verify">
-          다시 제출
+          다시 확인
         </Link>
       </div>
     );
@@ -265,7 +265,7 @@ function VerificationBanner() {
   return (
     <div className="p-banner vf-banner" role="status">
       <div>
-        <b>{step === "pending" ? "운영팀이 사업자 인증을 확인하고 있어요(보통 1영업일)." : "사업자 인증을 마쳐 주세요."}</b>{" "}
+        <b>{step === "pending" ? "상호가 매장명과 달라 운영팀이 확인하고 있어요(보통 1영업일)." : "사업자 인증을 마쳐 주세요."}</b>{" "}
         인증이 끝나면 발도장 앱에 공개되고 체크인을 받을 수 있어요.
         {step === "pending" && (
           <>

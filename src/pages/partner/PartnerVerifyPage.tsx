@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { HEIC_GUIDE, UnsupportedImageError, isAcceptedImage, isHeic, resizeImage } from "../../lib/imageResize";
-import { PartnerApiError, submitVerification, verificationStep, type Venue } from "../../lib/partnerApi";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  PartnerApiError,
+  fetchVerificationInfo,
+  submitVerification,
+  verificationStep,
+  type Venue,
+  type VerificationInfo,
+  type VerificationStep,
+} from "../../lib/partnerApi";
 import { usePartner } from "./PartnerLayout";
-
-const FILE_MAX_BYTES = 10 * 1024 * 1024;
-const ACCEPT = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif,application/pdf";
 
 /** 숫자만 뽑아 000-00-00000 으로. */
 export function formatBizNo(raw: string): string {
@@ -26,19 +30,39 @@ export function isValidBizNo(digits: string): boolean {
   return (10 - (sum % 10)) % 10 === n[9];
 }
 
+/** 숫자만 뽑아 YYYY.MM.DD 로. */
+export function formatDateDots(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 4) return d;
+  if (d.length <= 6) return `${d.slice(0, 4)}.${d.slice(4)}`;
+  return `${d.slice(0, 4)}.${d.slice(4, 6)}.${d.slice(6)}`;
+}
+
+/** YYYYMMDD 가 실제 존재하는 날짜인지. */
+function isRealDate(digits: string): boolean {
+  if (!/^\d{8}$/.test(digits)) return false;
+  const y = +digits.slice(0, 4), m = +digits.slice(4, 6), d = +digits.slice(6);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return y >= 1900 && dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+
 function todayLocal(): string {
   return new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
 }
 
 /**
- * 사업자 인증(/partner/verify). 매장 등록 직후 단계.
- * 제출 → 운영팀 확인 중(PENDING) → 인증 매장(VERIFIED) / 반려(REJECTED, 사유 + 다시 제출).
+ * 사업자 인증(/partner/verify) — 국세청 자동 진위확인.
+ * 입력 → VERIFIED(즉시 완료) / PENDING(상호가 매장명과 달라 운영팀 확인) / 422(불일치, 다시 입력).
  */
 export function PartnerVerifyPage() {
   const { venue } = usePartner();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const [resubmit, setResubmit] = useState(false);
+  /** 방금 이 화면에서 인증이 끝났으면 축하 화면 */
+  const [justVerified, setJustVerified] = useState(false);
   const isNew = params.get("new") === "1";
+  /** 내 정보 → [수정] 으로 들어오면 상태와 무관하게 폼(이전 값 미리 채움) */
+  const editing = params.get("edit") === "1";
 
   useEffect(() => {
     document.title = "사업자 인증 — 발도장 파트너";
@@ -50,38 +74,58 @@ export function PartnerVerifyPage() {
   return (
     <div className="p-narrow">
       <header className="p-page-head">
-        {isNew && <p className="p-eyebrow">2단계 · 사업자 인증</p>}
+        {isNew && step !== "verified" && <p className="p-eyebrow">2단계 · 사업자 인증</p>}
         <h1 className="p-title">{venue.name}</h1>
       </header>
 
-      {step === "verified" && (
-        <section className="p-card vf-state">
-          <span className="vf-badge vf-badge--ok">인증 매장</span>
-          <p className="vf-state-title">사업자 인증이 끝났어요</p>
-          <p className="p-sub">발도장 앱에 공개되고, 손님 체크인을 받을 수 있어요.</p>
-          <Link className="p-btn p-btn--primary p-btn--block" to="/partner/poster">
+      {step === "verified" && !editing && (
+        <section className={`p-card vf-state${justVerified ? " vf-celebrate" : ""}`} role="status">
+          {justVerified ? (
+            <>
+              <span className="vf-stamp" aria-hidden>
+                <svg width="32" height="32" viewBox="-40 -50 80 86" fill="currentColor">
+                  <ellipse cx="-27" cy="-14" rx="9" ry="12" transform="rotate(-24 -27 -14)" />
+                  <ellipse cx="-10" cy="-33" rx="10" ry="13" transform="rotate(-8 -10 -33)" />
+                  <ellipse cx="10" cy="-33" rx="10" ry="13" transform="rotate(8 10 -33)" />
+                  <ellipse cx="27" cy="-14" rx="9" ry="12" transform="rotate(24 27 -14)" />
+                  <path d="M0-8C13-8 29 8 29 19C29 29 21 33 12 31C6 30 3 28 0 28C-3 28-6 30-12 31C-21 33-29 29-29 19C-29 8-13-8 0-8Z" />
+                </svg>
+                <span>인증</span>
+              </span>
+              <p className="vf-state-title">인증 완료! 이제 발도장 앱에 공개돼요</p>
+              <p className="p-sub">손님 체크인도 바로 받을 수 있어요. 포스터를 출력해 입구에 붙여 주세요.</p>
+            </>
+          ) : (
+            <>
+              <span className="vf-badge vf-badge--ok">인증 매장</span>
+              <p className="vf-state-title">사업자 인증이 끝났어요</p>
+              <p className="p-sub">발도장 앱에 공개되고, 손님 체크인을 받을 수 있어요.</p>
+            </>
+          )}
+          <Link className="p-btn p-btn--primary p-btn--block" to={isNew ? "/partner/poster?welcome=1" : "/partner/poster"}>
             QR 포스터 출력하기
           </Link>
+          {justVerified && (
+            <Link className="p-link p-link--center" to="/partner/profile">
+              매장 꾸미러 가기
+            </Link>
+          )}
         </section>
       )}
 
-      {step === "pending" && !resubmit && (
-        <section className="p-card vf-state">
+      {step === "pending" && !resubmit && !editing && (
+        <section className="p-card vf-state" role="status">
           <span className="vf-badge">확인 중</span>
           <p className="vf-state-title">운영팀이 확인하고 있어요</p>
           <p className="p-sub">
-            보통 1영업일 안에 끝나요. 결과는 로그인 이메일로 알려 드려요. 그동안 매장 꾸미기와 포스터 준비를 미리 해 두세요.
+            사업자등록 상호가 매장명과 달라 운영팀이 한 번 더 확인해요. 보통 1영업일 안에 끝나고, 결과는 로그인 이메일로 알려 드려요.
           </p>
-          <div className="vf-actions">
-            <Link className="p-btn p-btn--primary" to="/partner/profile">
-              매장 꾸미기
-            </Link>
-            <Link className="p-btn p-btn--ghost" to="/partner/poster">
-              포스터 미리 보기
-            </Link>
-          </div>
-          <button type="button" className="p-link" onClick={() => setResubmit(true)}>
-            제출한 내용을 고쳐서 다시 낼게요
+          <PendingCompare venue={venue} />
+          <Link className="p-btn p-btn--primary p-btn--block" to="/partner/profile">
+            그동안 매장 꾸미기
+          </Link>
+          <button type="button" className="p-link p-link--center" onClick={() => setResubmit(true)}>
+            입력한 정보를 고쳐서 다시 확인할게요
           </button>
         </section>
       )}
@@ -89,60 +133,87 @@ export function PartnerVerifyPage() {
       {step === "rejected" && (
         <div className="p-banner vf-rejected" role="status">
           <div>
-            <span className="vf-badge vf-badge--danger">다시 제출 필요</span>
+            <span className="vf-badge vf-badge--danger">다시 확인 필요</span>
             <p className="vf-rejected-title">한 가지만 고쳐 주세요</p>
             {venue.verificationRejectReason && <p className="vf-rejected-reason">{venue.verificationRejectReason}</p>}
-            <p className="vf-rejected-body">아래에서 고쳐 다시 내 주시면 다시 확인해 드려요.</p>
+            <p className="vf-rejected-body">아래에서 고쳐 다시 확인해 주세요.</p>
           </div>
         </div>
       )}
 
-      {(step === "unsubmitted" || step === "rejected" || resubmit) && <VerifyForm venue={venue} isNew={isNew} />}
+      {editing && step === "verified" && (
+        <p className="p-banner vf-edit-note" role="status">
+          지금은 인증 매장이에요. 고친 정보로 다시 확인해도, 확인에 실패하면 기존 인증은 그대로 유지돼요.
+        </p>
+      )}
+
+      {(editing || step === "unsubmitted" || step === "rejected" || (step === "pending" && resubmit)) && (
+        <VerifyForm
+          key={`${venue.id}-${editing}`}
+          venue={venue}
+          isNew={isNew}
+          prefill={editing || step === "rejected" || resubmit}
+          wasVerified={step === "verified"}
+          onDone={(result) => {
+            setResubmit(false);
+            if (editing) setParams({}, { replace: true });
+            if (result === "verified") setJustVerified(true);
+          }}
+        />
+      )}
+      {editing && (
+        <Link className="p-link p-link--center" to="/partner/me">
+          취소하고 내 정보로 돌아가기
+        </Link>
+      )}
     </div>
   );
 }
 
-function VerifyForm({ venue, isNew }: { venue: Venue; isNew: boolean }) {
-  const navigate = useNavigate();
+function VerifyForm({
+  venue,
+  isNew,
+  prefill,
+  wasVerified,
+  onDone,
+}: {
+  venue: Venue;
+  isNew: boolean;
+  prefill: boolean;
+  wasVerified: boolean;
+  onDone: (step: VerificationStep) => void;
+}) {
   const { reloadVenues, handleAuthError } = usePartner();
+  const [prev, setPrev] = useState<VerificationInfo | null>(null);
   const [bizNo, setBizNo] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [openDate, setOpenDate] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [businessName, setBusinessName] = useState(venue.name);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+  /** 422(국세청 불일치) 시 사업자번호·대표자명·개업일 칸 강조 */
+  const [mismatch, setMismatch] = useState(false);
 
-  useEffect(() => () => {
-    if (preview) URL.revokeObjectURL(preview);
-  }, [preview]);
-
-  async function pickFile(f: File | undefined) {
-    if (!f) return;
-    // HEIC 는 이 브라우저가 열 수 있을 때만(JPEG 로 변환해 보냄). 못 열면 바로 안내.
-    if (isHeic(f)) {
-      try {
-        (await createImageBitmap(f)).close();
-      } catch {
-        setErrors((e) => ({ ...e, file: HEIC_GUIDE }));
-        return;
-      }
-    }
-    if (f.type !== "application/pdf" && !isAcceptedImage(f)) {
-      setErrors((e) => ({ ...e, file: "JPG·PNG·WEBP 사진 또는 PDF만 올릴 수 있어요." }));
-      return;
-    }
-    if (f.size > FILE_MAX_BYTES && f.type === "application/pdf") {
-      setErrors((e) => ({ ...e, file: "10MB 이하 파일만 올릴 수 있어요." }));
-      return;
-    }
-    setFile(f);
-    setErrors((e) => ({ ...e, file: "" }));
-    setPreview(f.type.startsWith("image/") ? URL.createObjectURL(f) : null);
-  }
+  // 이전 제출값 미리 채우기: 개업일·상호만(사업자번호·대표자명은 마스킹이라 다시 입력).
+  useEffect(() => {
+    if (!prefill) return;
+    let alive = true;
+    fetchVerificationInfo(venue.id)
+      .then((info) => {
+        if (!alive || !info) return;
+        setPrev(info);
+        if (info.openDate) setOpenDate(formatDateDots(info.openDate));
+        if (info.businessName) setBusinessName(info.businessName);
+      })
+      .catch((e) => {
+        handleAuthError(e);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [prefill, venue.id, handleAuthError]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -150,34 +221,40 @@ function VerifyForm({ venue, isNew }: { venue: Venue; isNew: boolean }) {
     const errs: Record<string, string> = {};
     if (!isValidBizNo(digits)) errs.bizNo = "번호가 맞지 않아요. 등록증의 10자리 숫자를 다시 확인해 주세요.";
     if (!ownerName.trim()) errs.ownerName = "사업자등록증에 적힌 대표자 이름을 입력해 주세요.";
-    if (!openDate) errs.openDate = "개업일을 입력해 주세요.";
-    else if (openDate > todayLocal()) errs.openDate = "개업일이 오늘보다 뒤일 수 없어요.";
-    if (!file) errs.file = "사업자등록증 사진을 올려 주세요.";
+    const dateDigits = openDate.replace(/\D/g, "");
+    if (!dateDigits) errs.openDate = "개업일을 입력해 주세요.";
+    else if (!isRealDate(dateDigits)) errs.openDate = "개업일 8자리를 2020.03.01 처럼 입력해 주세요.";
+    else if (dateDigits > todayLocal().replace(/-/g, "")) errs.openDate = "개업일이 오늘보다 뒤일 수 없어요.";
+    if (!businessName.trim()) errs.businessName = "사업자등록증의 상호를 입력해 주세요.";
     setErrors(errs);
-    if (Object.values(errs).some(Boolean) || !file) return;
+    if (Object.values(errs).some(Boolean)) return;
 
     setBusy(true);
-    setSubmitError(null);
-    setProgress(0);
+    setServerError(null);
+    setMismatch(false);
     try {
-      const prepared = file.type === "application/pdf" ? { blob: file as Blob, name: file.name } : await resizeImage(file);
-      if (prepared.blob.size > FILE_MAX_BYTES) throw new PartnerApiError(413, "10MB 이하 파일만 올릴 수 있어요.");
-      await submitVerification(
-        venue.id,
-        { bizNo: digits, ownerName: ownerName.trim(), openDate: openDate.replace(/-/g, ""), file: prepared.blob, fileName: prepared.name },
-        setProgress,
-      );
-      await reloadVenues();
-      navigate(isNew ? "/partner/poster?welcome=1" : "/partner/verify", { replace: true });
+      const updated = await submitVerification(venue.id, {
+        bizNo: digits,
+        ownerName: ownerName.trim(),
+        openDate: dateDigits,
+        businessName: businessName.trim(),
+      });
+      const venues = await reloadVenues();
+      const latest = venues.find((v) => v.id === venue.id) ?? updated;
+      onDone(latest ? verificationStep(latest) : "pending");
     } catch (err) {
       if (handleAuthError(err)) return;
-      if (err instanceof UnsupportedImageError) {
-        setErrors((x) => ({ ...x, file: err.message }));
-        setFile(null);
-        setPreview(null);
-        return;
+      if (err instanceof PartnerApiError && err.status === 422) {
+        setServerError(wasVerified ? `${err.message} 기존 인증은 그대로 유지돼요.` : err.message);
+        setMismatch(true);
+      } else {
+        setServerError(err instanceof PartnerApiError ? err.message : "확인하지 못했어요. 잠시 후 다시 시도해 주세요.");
       }
-      setSubmitError(err instanceof PartnerApiError ? err.message : "제출하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      // 배너가 렌더된 뒤 스크롤·포커스(스크린리더도 오류로 이동)
+      window.setTimeout(() => {
+        errorRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+        errorRef.current?.focus({ preventScroll: true });
+      }, 0);
     } finally {
       setBusy(false);
     }
@@ -186,70 +263,110 @@ function VerifyForm({ venue, isNew }: { venue: Venue; isNew: boolean }) {
   return (
     <form className="p-card" onSubmit={submit} noValidate>
       <h2 className="p-card-title">사업자 인증</h2>
-      <p className="p-sub">인증 매장만 발도장 앱에 공개되고, 손님 체크인을 받을 수 있어요.</p>
+      <p className="p-sub">
+        인증 매장만 발도장 앱에 공개되고, 손님 체크인을 받을 수 있어요. 국세청 등록 정보로 바로 확인해요.
+      </p>
+
+      {serverError && (
+        <div ref={errorRef} tabIndex={-1} className="p-banner p-banner--danger vf-server-error" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7.5v5.5M12 16.5h.01" />
+          </svg>
+          <span>{serverError}</span>
+        </div>
+      )}
+
+      {prev && (
+        <p className="p-hint vf-prev-note">
+          이전에 입력한 사업자번호({prev.bizNoMasked})와 대표자명({prev.ownerNameMasked})은 가려져 있어 다시 입력해 주세요.
+        </p>
+      )}
 
       <label className="p-field">
         <span className="p-label">사업자등록번호</span>
         <input
-          className="p-input vf-bizno"
+          className="p-input vf-mono"
           inputMode="numeric"
           autoComplete="off"
           placeholder="000-00-00000"
           value={bizNo}
           onChange={(e) => setBizNo(formatBizNo(e.target.value))}
-          aria-invalid={!!errors.bizNo}
+          aria-invalid={!!errors.bizNo || mismatch}
         />
         {errors.bizNo && <span className="p-error vf-err">{errors.bizNo}</span>}
       </label>
 
       <label className="p-field">
         <span className="p-label">대표자명</span>
-        <input className="p-input" autoComplete="off" value={ownerName} maxLength={30} onChange={(e) => setOwnerName(e.target.value)} aria-invalid={!!errors.ownerName} />
+        <input className="p-input" autoComplete="off" value={ownerName} maxLength={30} onChange={(e) => setOwnerName(e.target.value)} aria-invalid={!!errors.ownerName || mismatch} />
         {errors.ownerName && <span className="p-error vf-err">{errors.ownerName}</span>}
       </label>
 
       <label className="p-field">
         <span className="p-label">개업일</span>
-        <input className="p-input" type="date" max={todayLocal()} value={openDate} onChange={(e) => setOpenDate(e.target.value)} aria-invalid={!!errors.openDate} />
+        <input
+          className="p-input vf-mono"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="2020.03.01"
+          value={openDate}
+          onChange={(e) => setOpenDate(formatDateDots(e.target.value))}
+          aria-invalid={!!errors.openDate || mismatch}
+        />
+        <span className="p-hint vf-field-hint">
+          등록증의 '개업연월일' 8자리를 그대로 적어 주세요. 등록증이 없으면 홈택스에서 '사업자등록증 재발급'으로 볼 수 있어요.
+        </span>
         {errors.openDate && <span className="p-error vf-err">{errors.openDate}</span>}
       </label>
 
-      <div className="p-field">
-        <span className="p-label">사업자등록증</span>
-        <input ref={fileRef} type="file" accept={ACCEPT} hidden onChange={(e) => { void pickFile(e.target.files?.[0]); e.target.value = ""; }} />
-        {file ? (
-          <div className="vf-file">
-            {preview ? <img src={preview} alt="사업자등록증 미리보기" /> : <span className="vf-file-icon">PDF</span>}
-            <span className="vf-file-name">{file.name}</span>
-            <button type="button" className="p-btn p-btn--ghost p-btn--sm" onClick={() => fileRef.current?.click()}>
-              바꾸기
-            </button>
-          </div>
-        ) : (
-          <button type="button" className="vf-drop" onClick={() => fileRef.current?.click()}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-              <circle cx="12" cy="13" r="3.5" />
-            </svg>
-            사진 찍거나 파일 올리기
-            <small>글자가 잘 보이게 전체가 나오도록 찍어 주세요 (JPG·PNG·WEBP 또는 PDF, 10MB 이하)</small>
-          </button>
-        )}
-        {errors.file && <span className="p-error vf-err">{errors.file}</span>}
-      </div>
+      <label className="p-field">
+        <span className="p-label">상호</span>
+        <input className="p-input" autoComplete="off" value={businessName} maxLength={60} onChange={(e) => setBusinessName(e.target.value)} aria-invalid={!!errors.businessName} />
+        <span className="p-hint vf-field-hint">
+          <b>등록증의 상호와 글자 그대로 같은지</b> 확인해 주세요. 매장명과 다르면 운영팀이 한 번 더 확인해요.
+        </span>
+        {errors.businessName && <span className="p-error vf-err">{errors.businessName}</span>}
+      </label>
 
-      {submitError && <p className="p-error" role="alert">{submitError}</p>}
       <button type="submit" className="p-btn p-btn--primary p-btn--block" disabled={busy}>
-        {busy ? `제출 중… ${Math.round(progress * 100)}%` : "인증 요청하기"}
+        {busy ? "국세청 정보 확인 중…" : "인증하기"}
       </button>
       {isNew && (
         <Link className="p-link p-link--center" to="/partner/poster?welcome=1">
           나중에 할게요
         </Link>
       )}
-      <p className="p-fine">
-        운영팀 확인은 보통 1영업일 걸려요. 사업자등록증과 대표자 정보는 매장 확인에만 쓰고, 앱이나 손님에게 보이지 않아요.
-      </p>
+      <p className="p-fine">입력한 정보는 확인에만 쓰고, 앱이나 손님에게 보이지 않아요.</p>
     </form>
+  );
+}
+
+/** 확인 중: 입력한 상호와 매장명 비교(서버가 상호를 내려줄 때만). */
+function PendingCompare({ venue }: { venue: Venue }) {
+  const [info, setInfo] = useState<VerificationInfo | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchVerificationInfo(venue.id)
+      .then((i) => alive && setInfo(i))
+      .catch(() => {
+        // 비교는 부가 정보 — 실패하면 생략
+      });
+    return () => {
+      alive = false;
+    };
+  }, [venue.id]);
+  if (!info?.businessName) return null;
+  return (
+    <dl className="vf-compare">
+      <div>
+        <dt>입력한 상호</dt>
+        <dd>{info.businessName}</dd>
+      </div>
+      <div>
+        <dt>매장명</dt>
+        <dd>{venue.name}</dd>
+      </div>
+    </dl>
   );
 }

@@ -4664,7 +4664,7 @@ a:hover {
   flex-wrap: wrap;
   margin-bottom: 4px;
 }
-.vf-bizno {
+.vf-mono {
   font-size: 18px;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
@@ -4672,27 +4672,6 @@ a:hover {
 .vf-err {
   display: block;
   margin: 6px 0 0;
-}
-.vf-drop {
-  width: 100%;
-  min-height: 132px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 16px;
-  border: 1.5px dashed var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  cursor: pointer;
-}
-.vf-drop > svg {
-  color: var(--text-muted);
 }
 .vf-rejected {
   display: block;
@@ -4729,45 +4708,6 @@ a:hover {
   content: "";
   position: absolute;
   inset: -10px -4px;
-}
-.vf-drop small {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
-  word-break: keep-all;
-}
-.vf-file {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
-  background: var(--surface);
-}
-.vf-file img,
-.vf-file-icon {
-  flex: none;
-  width: 64px;
-  height: 64px;
-  border-radius: 10px;
-  object-fit: cover;
-  background: var(--surface-alt);
-}
-.vf-file-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  color: var(--text-muted);
-}
-.vf-file-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .vf-poster-note {
   margin-top: 0;
@@ -4824,4 +4764,157 @@ a:hover {
   font-weight: 900;
   white-space: nowrap;
   letter-spacing: -0.02em;
+}
+
+/* 국세청 자동 인증 */
+.vf-field-hint {
+  display: block;
+  margin: 6px 0 0;
+}
+.vf-server-error {
+  margin: 0 0 16px;
+  font-weight: 600;
+  scroll-margin-top: 80px;
+}
+.vf-server-error:focus {
+  outline: none;
+}
+.p-input[aria-invalid="true"] {
+  border-color: var(--danger-ink);
+}
+.p-input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+/* 인증 완료: 원형 낙관 인장이 비스듬히 찍힘 — 도장색은 이 한 곳에만 */
+.vf-stamp {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid var(--seal);
+  outline: 1px solid var(--seal);
+  outline-offset: 3px;
+  color: var(--seal);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transform: rotate(-8deg);
+  animation: vf-stamp 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.vf-stamp > span {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+@keyframes vf-stamp {
+  0% {
+    transform: scale(1.8) rotate(-20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) rotate(-8deg);
+    opacity: 1;
+  }
+}
+.vf-celebrate .vf-state-title {
+  text-wrap: balance;
+}
+.vf-compare {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  text-align: left;
+  font-size: 14px;
+}
+.vf-compare > div {
+  display: flex;
+  gap: 12px;
+}
+.vf-compare > div + div {
+  margin-top: 4px;
+}
+.vf-compare dt {
+  flex: none;
+  width: 72px;
+  color: var(--text-muted);
+}
+.vf-compare dd {
+  margin: 0;
+  font-weight: 700;
+}
+.vf-edit-note {
+  display: block;
+}
+.vf-prev-note {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vf-stamp {
+    animation: none;
+  }
+}
+.vf-celebrate .vf-state-title {
+  font-size: 20px;
+}
+
+/* 내 정보: 사업자 정보 */
+.biz {
+  padding: 14px 0;
+}
+.biz + .biz {
+  border-top: 1px solid var(--border-subtle);
+}
+.biz-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.biz-venue {
+  font-weight: 800;
+}
+.biz-skeleton {
+  height: 120px;
+  border-radius: 12px;
+}
+.biz-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.biz-list {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  font-size: 14px;
+}
+.biz-list > div {
+  display: flex;
+  gap: 12px;
+  padding: 3px 0;
+}
+.biz-list dt {
+  flex: none;
+  width: 84px;
+  color: var(--text-muted);
+}
+.biz-list dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.biz-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
