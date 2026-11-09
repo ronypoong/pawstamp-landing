@@ -6,11 +6,14 @@ interface NavItem {
   to: string;
   /** When true, link is treated as active only on exact path match. */
   exact?: boolean;
+  /** 빌드 시 생성되는 정적 페이지(/blog 등) — SPA 라우팅이 아니라 일반 링크로 연다. */
+  staticPage?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: "기능", to: "/#features" },
   { label: "성격테스트", to: "/quiz", exact: true },
+  { label: "블로그", to: "/blog/", staticPage: true },
   { label: "공지사항", to: "/notice" },
   { label: "문의", to: "/feedback", exact: true },
   // 업체용 파트너 포털 진입. "사장님"만으로는 제휴 메뉴인지 몰라서 "매장 제휴"로 표기.
@@ -30,6 +33,13 @@ export function Header() {
         <nav className="nav-links" aria-label="주요 메뉴">
           {NAV_ITEMS.map((item) => {
             // 해시 링크(/#xxx)는 React Router의 NavLink active 매칭이 부정확하므로 일반 <a> 사용
+            if (item.staticPage) {
+              return (
+                <a key={item.to} href={item.to}>
+                  {item.label}
+                </a>
+              );
+            }
             if (item.to.includes("#")) {
               const sectionHash = item.to.slice(item.to.indexOf("#"));
               const isActiveSection = pathname === "/" && hash === sectionHash;
