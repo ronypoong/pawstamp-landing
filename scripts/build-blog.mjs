@@ -475,6 +475,27 @@ function injectVerification() {
   if (metas) writeFileSync(p, html.replace("</head>", `${metas}</head>`));
 }
 
+/** /check 공유 미리보기용: SPA index.html 을 복사해 제목·설명·OG 만 바꾼 dist/check.html 을 만든다. */
+function writeCheckPage() {
+  const src = join(DIST, "index.html");
+  if (!existsSync(src)) return;
+  const title = "우리 개 외출 준비도, 몇 점일까? — 발도장 1분 진단";
+  const desc = "10문항 1분이면 접종 기록·준비물·매장 매너 점수와 지금 할 일까지 알려 줘요.";
+  const url = `${SITE}/check`;
+  const html = readFileSync(src, "utf8")
+    .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*/, `$1${esc(desc)}`)
+    .replace(/(<meta property="og:title" content=")[^"]*/, `$1${esc(title)}`)
+    .replace(/(<meta property="og:description" content=")[^"]*/, `$1${esc(desc)}`)
+    .replace(/(<meta property="og:url" content=")[^"]*/, `$1${url}`)
+    .replace(/<link rel="canonical"[^>]*>/, "")
+    .replace(
+      "</head>",
+      `<link rel="canonical" href="${url}" /><meta property="og:image" content="${SITE}/og/check.jpg" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" /><meta name="twitter:card" content="summary_large_image" /></head>`,
+    );
+  writeFileSync(join(DIST, "check.html"), html);
+}
+
 function main() {
   if (!existsSync(DIST)) throw new Error("dist 가 없어요. vite build 뒤에 실행해 주세요.");
   const posts = loadPosts();
@@ -487,6 +508,7 @@ function main() {
   writeFileSync(join(DIST, "blog", "rss.xml"), renderRss(posts));
   mergeSitemap(posts);
   injectVerification();
+  writeCheckPage();
   console.log(`[blog] ${posts.length}개 글 생성: ${posts.map((p) => `/blog/${p.slug}/`).join(", ")}`);
 }
 
