@@ -26,6 +26,8 @@
   --apricot: #e07a3f;
   --apricot-ink: #b8571f;
   --apricot-soft: #ffe8d6;
+  /* 도장색: 외출 준비도 진단(/check)과 홈 진입 카드 */
+  --stamp: #b4472f;
   /* 상태색(접종 확인 등): 임박=warn, 만료=danger */
   --warn-soft: #fef3c7;
   --warn-ink: #b45309;
@@ -1151,7 +1153,10 @@ a:hover {
   height: 56px;
   border-radius: 50%;
   background: #fff;
-  font-size: 28px;
+  border: 3px solid var(--stamp);
+  color: var(--stamp);
+  font-size: 26px;
+  font-weight: 900;
 }
 
 .quiz-text {
@@ -1165,13 +1170,14 @@ a:hover {
 .quiz-label {
   font-size: 12px;
   font-weight: 800;
-  color: var(--apricot-ink);
+  color: var(--stamp);
 }
 
 .quiz-title {
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.01em;
+  word-break: keep-all;
 }
 
 .quiz-sub {
@@ -1201,7 +1207,7 @@ a:hover {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--apricot);
+  background: var(--stamp);
   color: #fff;
   font-size: 20px;
   font-weight: 700;

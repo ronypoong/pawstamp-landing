@@ -8,6 +8,7 @@ import { AnnouncementDetailPage } from "./pages/AnnouncementDetailPage";
 import { InvitePage } from "./pages/InvitePage";
 import { PersonaTeaserPage } from "./pages/PersonaTeaserPage";
 import { QuizLandingPage } from "./pages/QuizLandingPage";
+import { OutingCheckPage } from "./pages/OutingCheckPage";
 import { VaccinePassPage } from "./pages/VaccinePassPage";
 import { CheckinInstallPage } from "./pages/CheckinInstallPage";
 import { PartnerIntroPage } from "./pages/partner/PartnerIntroPage";
@@ -27,6 +28,8 @@ export default function App() {
     <Routes>
       {/* 광고 랜딩: 헤더/푸터 없는 집중형 퍼널이라 Layout 밖에 둔다. */}
       <Route path="/quiz" element={<QuizLandingPage />} />
+      {/* 외출 준비도 진단: 성격테스트를 대체한 홈 진입 진단. 같은 집중형 퍼널이라 Layout 밖. */}
+      <Route path="/check" element={<OutingCheckPage />} />
       {/* 접종 확인 QR: 매장 직원이 웹으로 여는 단독 페이지. 반드시 /i/:code 보다 먼저 매칭되도록 Layout 밖·위에 둔다. */}
       <Route path="/i/pass/:token" element={<VaccinePassPage />} />
       {/* 업체(사장님) 포털: 로그인 후 화면은 사이트 헤더/푸터 없이 파트너 전용 껍데기로. */}

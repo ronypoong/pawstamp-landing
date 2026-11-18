@@ -104,8 +104,6 @@ const VALUES: Value[] = [
   },
 ];
 
-/** 성격검사 결과 테마 5색 (QuizLandingPage THEME 과 동일). */
-const QUIZ_DOTS = ["#ff8a3d", "#ff5e7e", "#3db8c4", "#c77dff", "#6d7be0"];
 
 export function HomePage() {
   const [target] = useState(detectStoreTarget);
@@ -167,19 +165,12 @@ export function HomePage() {
       </section>
 
       <section className="container quiz-wrap">
-        <Link to="/quiz" className="quiz-card">
-          <span className="quiz-emoji" aria-hidden="true">🐶</span>
+        <Link to="/check" className="quiz-card">
+          <span className="quiz-emoji" aria-hidden="true">✓</span>
           <span className="quiz-text">
-            <span className="quiz-label">30초 테스트</span>
-            <span className="quiz-title">우리 아이는 어떤 성격일까?</span>
-            <span className="quiz-sub">
-              회원가입 없이 바로 결과 카드 받기
-              <span className="quiz-dots" aria-hidden="true">
-                {QUIZ_DOTS.map((c) => (
-                  <i key={c} style={{ background: c }} />
-                ))}
-              </span>
-            </span>
+            <span className="quiz-label">1분 진단</span>
+            <span className="quiz-title">카페 갈 준비, 몇 점일까?</span>
+            <span className="quiz-sub">10문항 · 1분 · 항목별 할 일까지</span>
           </span>
           <span className="quiz-arrow" aria-hidden="true">→</span>
         </Link>
@@ -219,8 +210,8 @@ export function HomePage() {
           <h2>오늘부터, 우리 아이 하루에 발도장 하나</h2>
           <p>기록은 든든하게, 매일은 뿌듯하게. 무료로 시작하세요.</p>
           <StoreBadges target={target} inverse />
-          <Link to="/quiz" className="download-quiz-link">
-            아직 고민된다면? 30초 성격 테스트 해보기 →
+          <Link to="/check" className="download-quiz-link">
+            아직 고민된다면? 1분 외출 준비도 진단 해보기 →
           </Link>
         </div>
       </section>

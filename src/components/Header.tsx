@@ -12,7 +12,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "기능", to: "/#features" },
-  { label: "성격테스트", to: "/quiz", exact: true },
+  { label: "외출 준비 진단", to: "/check", exact: true },
   { label: "블로그", to: "/blog/", staticPage: true },
   { label: "공지사항", to: "/notice" },
   { label: "문의", to: "/feedback", exact: true },
