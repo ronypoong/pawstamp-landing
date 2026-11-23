@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "postbuild": "node scripts/build-blog.mjs",
+    "postbuild": "node scripts/build-blog.mjs && vite build --ssr src/entry-server.tsx --outDir dist-ssr --emptyOutDir --logLevel warn && node scripts/prerender.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

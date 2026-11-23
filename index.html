@@ -2,6 +2,9 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <!-- 미리 그린 홈 내용은 /, /check, /partner 외 경로에선 숨긴다(main.tsx 가 비우고 다시 그림). -->
+    <style>html.spa-wait #root{visibility:hidden}</style>
+    <script>(function(){var p=location.pathname.replace(/\/+$/,"")||"/";if(p!=="/"&&p!=="/check"&&p!=="/partner")document.documentElement.classList.add("spa-wait")})()</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>발도장 — 반려견 접종 확인 QR · 펫 패스, 강아지·고양이 기록 앱</title>
     <meta name="description" content="발도장은 강아지·고양이 보호자를 위한 무료 앱입니다. 애견카페·미용실·유치원·호텔에서 펫 패스(접종 확인 QR)로 예방접종 현황을 바로 보여주고, 접종·진료 기록과 만료 알림, 매일의 발도장을 한 곳에서 관리하세요." />
